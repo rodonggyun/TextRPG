@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 class TowerGameWithSkills
 {
@@ -34,8 +35,54 @@ class TowerGameWithSkills
         public void Trigger() => CurrentCooldown = MaxCooldown;
         public void TickCooldown() { if (CurrentCooldown > 0) CurrentCooldown--; }
     }
- 
- 
+    static string saveFile = "save.txt";
+    static void SaveGame()
+    {
+        using (StreamWriter writer = new StreamWriter(saveFile))
+        {
+            writer.WriteLine(floor);
+            writer.WriteLine(level);
+            writer.WriteLine(exp);
+            writer.WriteLine(hp);
+            writer.WriteLine(maxHp);
+            foreach (var skill in skills)
+            {
+                writer.WriteLine(skill.CurrentCooldown);
+            }
+        }
+        Console.WriteLine("게임이 저장되었습니다.");
+    }
+
+    static bool LoadGame()
+    {
+        if (!File.Exists(saveFile)) return false;
+
+        try
+        {
+            string[] lines = File.ReadAllLines(saveFile);
+            int index = 0;
+            floor = int.Parse(lines[index++]);
+            level = int.Parse(lines[index++]);
+            exp = int.Parse(lines[index++]);
+            hp = int.Parse(lines[index++]);
+            maxHp = int.Parse(lines[index++]);
+
+            InitSkills(); // 스킬 초기화 후 쿨다운 적용
+            for (int i = 0; i < skills.Count; i++)
+            {
+                skills[i].CurrentCooldown = int.Parse(lines[index++]);
+            }
+
+            return true;
+        }
+        catch
+        {
+            Console.WriteLine("불러오기에 실패했습니다.");
+            return false;
+        }
+    }
+
+
     static List<Skill> skills;
 
     static void Main()
@@ -44,6 +91,16 @@ class TowerGameWithSkills
 
         Console.CursorVisible = false;
         Console.WriteLine(" 스킬 탑 오르기 RPG 시작!");
+        Console.WriteLine("불러오시겠습니까? (Y/N): ");
+        string choice = Console.ReadLine().ToUpper();
+        if (choice == "Y" && LoadGame())
+        {
+            Console.WriteLine("게임 데이터를 불러왔습니다!");
+        }
+        else
+        {
+            InitSkills();
+        }
 
         while (true)
         {
@@ -64,6 +121,10 @@ class TowerGameWithSkills
             Console.WriteLine($"\n EXP +{earnedExp}");
             exp += earnedExp;
             LevelUpIfNeeded();
+
+            Console.WriteLine("\n저장하시겠습니까? (Y/N):");
+            if (Console.ReadLine().ToUpper() == "Y")
+                SaveGame();
 
             Console.WriteLine(" 계속하려면 Enter...");
             Console.ReadLine();
