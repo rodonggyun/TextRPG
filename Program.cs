@@ -192,4 +192,4 @@ class TowerGameWithSkills
     {
         return (int)(10 * Math.Pow(level, 1.2));
     }
-}// nolabong노라봉
+}
