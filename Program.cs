@@ -52,7 +52,7 @@ class TowerGameWithSkills
 
             isBoss = floor % 10 == 0;
             StartBattle(isBoss);
-
+                
             if (hp <= 0)
             {
                 Console.WriteLine("\n 사망! 탑에서 떨어졌습니다.");
@@ -102,7 +102,7 @@ class TowerGameWithSkills
         {
             Console.Clear();
             Console.WriteLine($"===== {enemyName} 전투 =====");
-            Console.WriteLine($" HP: {hp}/{maxHp}   레벨: {level}   EXP: {exp}/{ExpToLevelUp()}");
+            Console.WriteLine($" 층수: {floor}    HP: {hp}/{maxHp}   레벨: {level}   EXP: {exp}/{ExpToLevelUp()}");
             Console.WriteLine($" 적 HP: {currentEnemyHp}");
 
             Console.WriteLine("\n 스킬 목록:");
