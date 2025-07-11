@@ -34,7 +34,8 @@ class TowerGameWithSkills
         public void Trigger() => CurrentCooldown = MaxCooldown;
         public void TickCooldown() { if (CurrentCooldown > 0) CurrentCooldown--; }
     }
-
+ 
+ 
     static List<Skill> skills;
 
     static void Main()
