@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 
 namespace Text_RPG
 {
-        class MonsterInfo
-        {
-            public int type;
-            public string name;
-            public int hp;
-            public int level;
-            public int exp;
-            public bool dead;
-            public int gold;
-            public int atk;
-        }
+    class MonsterInfo
+    {
+        public int type;
+        public string name;
+        public int hp;
+        public int level;
+        public int exp;
+        public bool dead;
+        public int gold;
+        public int atk;
+    }
 
     // 전투 및 선택지 관련 클래스
-        static class Test
-        {
+    static class Dungeon
+    {
         static List<MonsterInfo> monsterList = new List<MonsterInfo>() {
             new MonsterInfo() {type=1, name="슬라임", hp=100, level=1, exp=10, dead=false, gold=10, atk=1},
             new MonsterInfo() {type=2, name="미니언", hp=100, level=3, exp=30, dead=false, gold=30, atk=3},
@@ -28,10 +28,12 @@ namespace Text_RPG
         };
 
 
-        static void Battle() {
+        static void Battle()
+        {
             Console.WriteLine("Battle!!\n\n");
 
-            for (int i = 0; i < monsterList.Count; i++) {
+            for (int i = 0; i < monsterList.Count; i++)
+            {
                 Console.WriteLine($"{monsterList[i].level} {monsterList[i].name}\t HP:{monsterList[i].level}");
             }
 
@@ -42,9 +44,22 @@ namespace Text_RPG
             int choice = ShowMenu(options);
 
             Console.WriteLine($"\n당신은 '{options[choice]}'를 선택했습니다!");
+
+            if (choice == 0)
+            { //공격한다 선택
+                Random rand = new Random;
+                int monsterCount = rand.Next(1, 5); //한 번에 나오는 몬스터는 1~4마리(랜덤)
+
+                List<MonsterInfo> appearMonsters = new List<MonsterInfo>(); //출현 몬스터들을 새 리스트로 생성
+
+                for (int i = 0; i < monsterCount;) {
+                    int index = rand.Next(monsterList.Count); //몬스터 랜덤 등장
+
+                }
+            }
         }
 
-        
+
 
 
         static int ShowMenu(string[] options) //방향키 움직이는 함수
@@ -54,7 +69,7 @@ namespace Text_RPG
             ConsoleKey key;
             do
             {
-                Console.Clear(); 
+                Console.Clear();
                 Console.WriteLine("무엇을 할까요?\n");
 
                 // 선택지 출력
