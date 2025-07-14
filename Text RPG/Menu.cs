@@ -15,6 +15,7 @@ static class MenuSelector
         {
             Console.Clear();
             Console.WriteLine($"▶ {title}\n");
+            
 
             for (int i = 0; i < options.Count; i++)
             {

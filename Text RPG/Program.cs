@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.IO;
 using System.Text.Json;
 using System.Collections.Generic;
@@ -102,7 +102,7 @@ class Program
 
         int selected = MenuSelector.Select("직업을 선택하세요", new List<string>
         {
-            "전사", "도적", "마법사", "성직자"
+            "전사", "도적", "마법사", "성기사"
         });
         Player player = new Player { Name = name };
 
@@ -116,17 +116,17 @@ class Program
             case 1:
                 player.Job = "도적";
                 player.HP = player.MaxHP = 100;
-                player.STR = 6; player.DEX = 10; player.INT = 4; player.DEF = 4;
+                player.STR = 6; player.DEX = 10; player.INT = 4; player.DEF = 5;
                 break;
             case 2:
                 player.Job = "마법사";
                 player.HP = player.MaxHP = 80;
-                player.STR = 2; player.DEX = 4; player.INT = 12; player.DEF = 3;
+                player.STR = 2; player.DEX = 5; player.INT = 12; player.DEF = 8;
                 break;
             case 3:
-                player.Job = "성직자";
+                player.Job = "성기사";
                 player.HP = player.MaxHP = 110;
-                player.STR = 4; player.DEX = 4; player.INT = 8; player.DEF = 6;
+                player.STR = 10; player.DEX = 2; player.INT = 2; player.DEF = 10;
                 break;
         }
 
