@@ -15,14 +15,18 @@ class Program
         {
             int selected = MenuSelector.Select("무엇을 하시겠습니까?", new List<string>
             {
-                "스탯 확인", "저장/불러오기", "게임 종료"
+                "스탯 확인", "저장/불러오기", "게임 종료", "마을 방문"
             });
 
             Console.Clear();
             if (selected == 0) player.DisplayStats();
             else if (selected == 1) SaveLoadMenu(ref player);
             else if (selected == 2) break;
-
+            else if (selected == 3)
+            {
+                Town town = new Town();
+                town.Enter(player);
+            }
             Console.WriteLine("\n아무 키나 눌러 계속...");
             Console.ReadKey();
         }
