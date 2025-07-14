@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Text_RPG;
 
@@ -13,10 +14,14 @@ class Program
         Console.WriteLine(" 스킬 탑 오르기 RPG 시작!");
         Console.WriteLine("불러오시겠습니까? (Y/N): ");
         string choice = Console.ReadLine().ToUpper();
-
-        if (choice == "Y" && Save.LoadGame()) Console.WriteLine("게임 데이터를 불러왔습니다!");
-
-        else GameState.InitSkills();
+        if (choice == "Y" && LoadGame())
+        {
+            Console.WriteLine("게임 데이터를 불러왔습니다!");
+        }
+        else
+        {
+            InitSkills();
+        }
 
         while (true)
         {
@@ -41,6 +46,10 @@ class Program
             Console.WriteLine("\n저장하시겠습니까? (Y/N):");
 
             if (Console.ReadLine().ToUpper() == "Y") Save.SaveGame();
+
+            Console.WriteLine("\n저장하시겠습니까? (Y/N):");
+            if (Console.ReadLine().ToUpper() == "Y")
+                SaveGame();
 
             Console.WriteLine(" 계속하려면 Enter...");
             Console.ReadLine();
