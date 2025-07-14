@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Collections.Generic;
+using System.Numerics;
 
 class Program
 {
@@ -103,7 +104,6 @@ class Program
         {
             "전사", "도적", "마법사", "성직자"
         });
-
         Player player = new Player { Name = name };
 
         switch (selected)
