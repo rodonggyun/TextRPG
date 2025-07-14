@@ -21,10 +21,28 @@ namespace test
     // 전투 및 선택지 관련 클래스
     public static class Dungeon
     {
-        static List<MonsterInfo> monsterList = new List<MonsterInfo>() {
-            new MonsterInfo() {type=1, name="슬라임", hp=100, level=1, exp=10, dead=false, gold=10, atk=1},
-            new MonsterInfo() {type=2, name="미니언", hp=100, level=3, exp=30, dead=false, gold=30, atk=3},
-            new MonsterInfo() {type=3, name="대포미니언", hp=100, level=5, exp=50, dead=false, gold=20, atk=10}
+        static MonsterInfo CreateMonster(int type, string name, int baseHp, int minLevel, int maxLevel)
+        { //몬스터 생성
+            Random rand = new Random();
+            int level = rand.Next(minLevel, maxLevel + 1); //레벨은 최소 레벨 ~ 최대 레벨 랜덤 범위
+
+            return new MonsterInfo()
+            {
+                type = type,
+                name = name,
+                hp = baseHp + level * 10, //1레벨이면 hp10, 2레벨이면 hp20, ...
+                level = level,
+                exp = level * 10,
+                gold = level * 5,
+                atk = level * 2,
+                dead = false
+            };
+        }
+
+        static List<MonsterInfo> monsterList = new List<MonsterInfo>() { //몬스터 리스트 생성
+            CreateMonster(1, "슬라임", 10, 1, 4),  //슬라임 레벨 1일때 체력 20부터 등장
+            CreateMonster(2, "고블린", 15, 1, 6), //고블린 1레벨은 체력 15부터 등장
+            CreateMonster(3, "오크", 20, 2, 7)
         };
 
 
