@@ -1,257 +1,135 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
+using System.Collections.Generic;
 
-class TowerGameWithSkills
+class Program
 {
-    static int floor = 1;
-    static int level = 1;
-    static int exp = 0;
-    static int hp = 100;
-    static int maxHp = 100;
-    static int currentEnemyHp;
-    static bool isBoss = false;
-
-    static Random rand = new Random();
-
-    class Skill
-    {
-        public string Name;
-        public string Description;
-        public int MaxCooldown;
-        public int CurrentCooldown;
-        public Action Effect;
-
-        public Skill(string name, string desc, int cooldown, Action effect)
-        {
-            Name = name;
-            Description = desc;
-            MaxCooldown = cooldown;
-            CurrentCooldown = 0;
-            Effect = effect;
-        }
-
-        public bool IsAvailable => CurrentCooldown == 0;
-        public void Trigger() => CurrentCooldown = MaxCooldown;
-        public void TickCooldown() { if (CurrentCooldown > 0) CurrentCooldown--; }
-    }
-    static string saveFile = "save.txt";
-    static void SaveGame()
-    {
-        using (StreamWriter writer = new StreamWriter(saveFile))
-        {
-            writer.WriteLine(floor);
-            writer.WriteLine(level);
-            writer.WriteLine(exp);
-            writer.WriteLine(hp);
-            writer.WriteLine(maxHp);
-            foreach (var skill in skills)
-            {
-                writer.WriteLine(skill.CurrentCooldown);
-            }
-        }
-        Console.WriteLine("게임이 저장되었습니다.");
-    }
-
-    static bool LoadGame()
-    {
-        if (!File.Exists(saveFile)) return false;
-
-        try
-        {
-            string[] lines = File.ReadAllLines(saveFile);
-            int index = 0;
-            floor = int.Parse(lines[index++]);
-            level = int.Parse(lines[index++]);
-            exp = int.Parse(lines[index++]);
-            hp = int.Parse(lines[index++]);
-            maxHp = int.Parse(lines[index++]);
-
-            InitSkills(); // 스킬 초기화 후 쿨다운 적용
-            for (int i = 0; i < skills.Count; i++)
-            {
-                skills[i].CurrentCooldown = int.Parse(lines[index++]);
-            }
-
-            return true;
-        }
-        catch
-        {
-            Console.WriteLine("불러오기에 실패했습니다.");
-            return false;
-        }
-    }
-
-
-    static List<Skill> skills;
-
     static void Main()
     {
-        InitSkills();
-
-        Console.CursorVisible = false;
-        Console.WriteLine(" 스킬 탑 오르기 RPG 시작!");
-        Console.WriteLine("불러오시겠습니까? (Y/N): ");
-        string choice = Console.ReadLine().ToUpper();
-        if (choice == "Y" && LoadGame())
-        {
-            Console.WriteLine("게임 데이터를 불러왔습니다!");
-        }
-        else
-        {
-            InitSkills();
-        }
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Player player = NewGameOrLoad();
 
         while (true)
         {
-            Console.Clear();
-            Console.WriteLine($"\n 현재 층: {floor}");
-            Console.WriteLine($" HP: {hp}/{maxHp}   레벨: {level}  ⭐ EXP: {exp}/{ExpToLevelUp()}");
-
-            isBoss = floor % 10 == 0;
-            StartBattle(isBoss);
-                
-            if (hp <= 0)
+            int selected = MenuSelector.Select("무엇을 하시겠습니까?", new List<string>
             {
-                Console.WriteLine("\n 사망! 탑에서 떨어졌습니다.");
+                "스탯 확인", "저장/불러오기", "게임 종료"
+            });
+
+            Console.Clear();
+            if (selected == 0) player.DisplayStats();
+            else if (selected == 1) SaveLoadMenu(ref player);
+            else if (selected == 2) break;
+
+            Console.WriteLine("\n아무 키나 눌러 계속...");
+            Console.ReadKey();
+        }
+    }
+
+    static Player NewGameOrLoad()
+    {
+        int selected = MenuSelector.Select("게임 시작 방식 선택", new List<string>
+        {
+            "새 게임 시작", "저장된 게임 불러오기"
+        });
+
+        if (selected == 1)
+        {
+            int slot = SelectSaveSlot("불러오기");
+            if (slot != -1)
+            {
+                var loaded = SaveSystem.Load(slot);
+                if (loaded != null) return loaded;
+                Console.WriteLine("불러오기에 실패하여 새 게임을 시작합니다.");
+                Console.ReadKey();
+            }
+        }
+
+        return CreateNewPlayer();
+    }
+
+    static void SaveLoadMenu(ref Player player)
+    {
+        var options = new List<string> { "저장한다", "불러온다", "나간다" };
+
+        while (true)
+        {
+            int selected = MenuSelector.Select("저장/불러오기 메뉴", options, true);
+            Console.Clear();
+
+            if (selected == -1 || options[selected] == "나간다") break;
+
+            if (options[selected] == "저장한다")
+            {
+                int slot = SelectSaveSlot("저장");
+                if (slot != -1) SaveSystem.Save(player, slot);
+            }
+            else if (options[selected] == "불러온다")
+            {
+                int slot = SelectSaveSlot("불러오기");
+                if (slot != -1)
+                {
+                    var loaded = SaveSystem.Load(slot);
+                    if (loaded != null) player = loaded;
+                }
+            }
+
+            Console.WriteLine("\n아무 키나 누르세요...");
+            Console.ReadKey();
+        }
+    }
+
+    static int SelectSaveSlot(string action)
+    {
+        List<string> options = new List<string>();
+        for (int i = 1; i <= 3; i++)
+        {
+            string info = SaveSystem.GetSaveInfo(i);
+            options.Add($"슬롯 {i} - {info}");
+        }
+
+        int selected = MenuSelector.Select($"{action}할 슬롯을 선택하세요", options, true);
+        return selected == -1 ? -1 : selected + 1;
+    }
+
+    static Player CreateNewPlayer()
+    {
+        Console.Clear();
+        Console.Write("플레이어 이름을 입력하세요: ");
+        string name = Console.ReadLine();
+
+        int selected = MenuSelector.Select("직업을 선택하세요", new List<string>
+        {
+            "전사", "도적", "마법사", "성직자"
+        });
+
+        Player player = new Player { Name = name };
+
+        switch (selected)
+        {
+            case 0:
+                player.Job = "전사";
+                player.HP = player.MaxHP = 150;
+                player.STR = 10; player.DEX = 5; player.INT = 2; player.DEF = 8;
                 break;
-            }
-
-            int earnedExp = rand.Next(10, 20);
-            Console.WriteLine($"\n EXP +{earnedExp}");
-            exp += earnedExp;
-            LevelUpIfNeeded();
-
-            Console.WriteLine("\n저장하시겠습니까? (Y/N):");
-            if (Console.ReadLine().ToUpper() == "Y")
-                SaveGame();
-
-            Console.WriteLine(" 계속하려면 Enter...");
-            Console.ReadLine();
-            floor++;
-        }
-    }
-
-    static void InitSkills()
-    {
-        skills = new List<Skill>()
-        {
-            new Skill("파워 슬래시", "30~50 데미지", 3, () => {
-                int dmg = rand.Next(30, 51);
-                currentEnemyHp -= dmg;
-                Console.WriteLine($" 파워 슬래시로 {dmg} 피해!");
-            }),
-            new Skill("힐", "HP 30 회복", 4, () => {
-                hp += 30;
-                if (hp > maxHp) hp = maxHp;
-                Console.WriteLine($" 체력을 30 회복!");
-            }),
-            new Skill("광역참격", "15~25 x2 피해", 5, () => {
-                int d1 = rand.Next(15, 26);
-                int d2 = rand.Next(15, 26);
-                currentEnemyHp -= (d1 + d2);
-                Console.WriteLine($" 광역참격으로 {d1} + {d2} 피해!");
-            })
-        };
-    }
-
-    static void StartBattle(bool isBoss)
-    {
-        currentEnemyHp = isBoss ? rand.Next(60, 100) : rand.Next(25, 40);
-        string enemyName = isBoss ? " 보스" : " 몬스터";
-
-        while (currentEnemyHp > 0 && hp > 0)
-        {
-            Console.Clear();
-            Console.WriteLine($"===== {enemyName} 전투 =====");
-            Console.WriteLine($" 층수: {floor}    HP: {hp}/{maxHp}   레벨: {level}   EXP: {exp}/{ExpToLevelUp()}");
-            Console.WriteLine($" 적 HP: {currentEnemyHp}");
-
-            Console.WriteLine("\n 스킬 목록:");
-            for (int i = 0; i < skills.Count; i++)
-            {
-                var s = skills[i];
-                Console.WriteLine($" {i + 1}. {s.Name} ({s.Description}) - 쿨다운: {(s.IsAvailable ? "Ready" : s.CurrentCooldown + "턴")}");
-            }
-
-            Console.Write("\n 행동 선택 (A: 기본공격, 1~3: 스킬): ");
-            string input = Console.ReadLine();
-
-            Console.Clear();
-
-            if (input == "A" || input == "a")
-            {
-                int dmg = rand.Next(10, 20);
-                currentEnemyHp -= dmg;
-                Console.WriteLine($" 기본 공격으로 {dmg} 피해!");
-            }
-            else if (int.TryParse(input, out int index) && index >= 1 && index <= skills.Count)
-            {
-                var s = skills[index - 1];
-                if (s.IsAvailable)
-                {
-                    s.Effect();
-                    s.Trigger();
-                }
-                else
-                {
-                    Console.WriteLine($" {s.Name}은 {s.CurrentCooldown}턴 남았습니다!");
-                    ContinuePrompt();
-                    continue;
-                }
-            }
-            else
-            {
-                Console.WriteLine(" 잘못된 입력입니다.");
-                ContinuePrompt();
-                continue;
-            }
-
-            // 적 반격
-            if (currentEnemyHp > 0)
-            {
-                int dmg = isBoss ? rand.Next(10, 18) : rand.Next(6, 12);
-                hp -= dmg;
-                Console.WriteLine($" 적의 반격! {dmg} 피해를 입었습니다. (HP: {hp})");
-            }
-
-            foreach (var s in skills)
-                s.TickCooldown();
-
-            ContinuePrompt();
+            case 1:
+                player.Job = "도적";
+                player.HP = player.MaxHP = 100;
+                player.STR = 6; player.DEX = 10; player.INT = 4; player.DEF = 4;
+                break;
+            case 2:
+                player.Job = "마법사";
+                player.HP = player.MaxHP = 80;
+                player.STR = 2; player.DEX = 4; player.INT = 12; player.DEF = 3;
+                break;
+            case 3:
+                player.Job = "성직자";
+                player.HP = player.MaxHP = 110;
+                player.STR = 4; player.DEX = 4; player.INT = 8; player.DEF = 6;
+                break;
         }
 
-        if (hp > 0)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"\n {(isBoss ? "보스" : "몬스터")} 처치 성공!");
-            Console.ResetColor();
-        }
-    }
-
-    static void ContinuePrompt()
-    {
-        Console.WriteLine("\n Enter 키를 눌러 계속...");
-        Console.ReadLine();
-    }
-
-    static void LevelUpIfNeeded()
-    {
-        while (exp >= ExpToLevelUp())
-        {
-            exp -= ExpToLevelUp();
-            level++;
-            maxHp += 10;
-            hp = maxHp;
-
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($" 레벨업! Lv.{level} (최대 HP {maxHp})");
-            Console.ResetColor();
-        }
-    }
-
-    static int ExpToLevelUp()
-    {
-        return (int)(10 * Math.Pow(level, 1.2));
+        return player;
     }
 }
