@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Text_RPG
+namespace test
 {
     class MonsterInfo
     {
@@ -19,7 +19,7 @@ namespace Text_RPG
     }
 
     // 전투 및 선택지 관련 클래스
-    static class Dungeon
+    public static class Dungeon
     {
         static List<MonsterInfo> monsterList = new List<MonsterInfo>() {
             new MonsterInfo() {type=1, name="슬라임", hp=100, level=1, exp=10, dead=false, gold=10, atk=1},
@@ -30,37 +30,54 @@ namespace Text_RPG
 
         static void Battle()
         {
-            Console.WriteLine("Battle!!\n\n");
+            MonsterAppear();
 
-            for (int i = 0; i < monsterList.Count; i++)
-            {
-                Console.WriteLine($"{monsterList[i].level} {monsterList[i].name}\t HP:{monsterList[i].level}");
-            }
-
-            Console.WriteLine("[내 정보]");
-            //상태창 가져오기
+            Console.WriteLine("\n[내 정보]");
+            //상태창 가져오는 작업 필요함
 
             string[] options = { "공격한다.", "도망간다.", "춤을 춘다." };
             int choice = ShowMenu(options);
 
             Console.WriteLine($"\n당신은 '{options[choice]}'를 선택했습니다!");
 
-            if (choice == 0)
-            { //공격한다 선택
-                Random rand = new Random;
-                int monsterCount = rand.Next(1, 5); //한 번에 나오는 몬스터는 1~4마리(랜덤)
-
-                List<MonsterInfo> appearMonsters = new List<MonsterInfo>(); //출현 몬스터들을 새 리스트로 생성
-
-                for (int i = 0; i < monsterCount;) {
-                    int index = rand.Next(monsterList.Count); //몬스터 랜덤 등장
-
-                }
-            }
         }
 
 
+        static void MonsterAppear()
+        { //몬스터 랜덤 등장
+            Random rand = new Random();
+            int monsterCount = rand.Next(1, 5); //한 번에 나오는 몬스터는 1~4마리(랜덤)
 
+            List<MonsterInfo> appearMonsters = new List<MonsterInfo>(); //출현 몬스터들을 새 리스트로 생성
+
+            for (int i = 0; i < monsterCount; i++)
+            { //뽑은 숫자만큼
+                int index = rand.Next(monsterList.Count); //몬스터 랜덤 등장
+                MonsterInfo original = monsterList[index]; //몬스터는 리스트에서 무작위로 가져옴.(얘는 복사한 객체가 아니라 원본 몬스터임)
+
+                MonsterInfo clone = new MonsterInfo() //원본 몬스터에게 피해 안 가게끔 깊은 복사
+                {
+                    type = original.type,
+                    name = original.name,
+                    hp = original.hp,
+                    level = original.level,
+                    exp = original.exp,
+                    dead = false,
+                    gold = original.gold,
+                    atk = original.atk
+                };
+
+                appearMonsters.Add(clone); //출현 몬스터 리스트에 복제한 값 넣기
+            }
+
+            Console.WriteLine("Battle!!\n");
+
+            for (int i = 0; i < appearMonsters.Count; i++)
+            { //몬스터 출력
+                MonsterInfo m = appearMonsters[i];  //appearMonsters의 자료형이 MonsterInfo라 m 앞에 붙임
+                Console.WriteLine($"[{i + 1}] Lv.{m.level} {m.name} (HP: {m.hp})");
+            }
+        }
 
         static int ShowMenu(string[] options) //방향키 움직이는 함수
         {
@@ -69,8 +86,7 @@ namespace Text_RPG
             ConsoleKey key;
             do
             {
-                Console.Clear();
-                Console.WriteLine("무엇을 할까요?\n");
+                Console.WriteLine("\n무엇을 할까요?\n");
 
                 // 선택지 출력
                 for (int i = 0; i < options.Length; i++)
