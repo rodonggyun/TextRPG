@@ -8,6 +8,8 @@ public class Player
 {
     public string Name { get; set; }
     public string Job { get; set; }
+    public string SubJob;
+    public string ThirdJob;
     public int HP { get; set; }
     public int MaxHP { get; set; }
     public int STR { get; set; }
@@ -123,4 +125,92 @@ public class Player
     }
 
     public int Defense => DEF;
+
+    public void CheckForSecondJobChange()
+    {
+        if (Level >= 10 && SubJob == null)
+        {
+            var options = GetSecondJobOptions(Job);
+            int selection = MenuSelector.Select($"{Job}의 2차 전직을 선택하세요!", options);
+            if (selection >= 0)
+            {
+                SubJob = options[selection];
+                Console.WriteLine($"\n▶ 당신은 {SubJob}으로 전직했습니다!\n");
+                ApplySecondJobBonus(SubJob);
+            }
+        }
+    }
+
+    public void CheckForThirdJobChange()
+    {
+        if (Level >= 20 && ThirdJob == null && SubJob != null)
+        {
+            var options = GetThirdJobOptions(SubJob);
+            int selection = MenuSelector.Select($"{SubJob}의 3차 전직을 선택하세요!", options);
+            if (selection >= 0)
+            {
+                ThirdJob = options[selection];
+                Console.WriteLine($"\n▶ 당신은 {ThirdJob}으로 3차 전직했습니다!!\n");
+                ApplyThirdJobBonus(ThirdJob);
+            }
+        }
+    }
+
+    private List<string> GetSecondJobOptions(string job)
+    {
+        return job switch
+        {
+            "전사" => new List<string> { "버서커", "가디언" },
+            "도적" => new List<string> { "어쌔신", "섀도우댄서" },
+            "마법사" => new List<string> { "아크메이지", "소서러" },
+            "성기사" => new List<string> { "크루세이더", "템플러" },
+            _ => new List<string>()
+        };
+    }
+
+    private List<string> GetThirdJobOptions(string subJob)
+    {
+        return subJob switch
+        {
+            "버서커" => new List<string> { "블러드나이트" },
+            "가디언" => new List<string> { "아이언월" },
+            "어쌔신" => new List<string> { "나이트크로우" },
+            "섀도우댄서" => new List<string> { "팬텀댄서" },
+            "아크메이지" => new List<string> { "엘더위치" },
+            "소서러" => new List<string> { "디멘터" },
+            "크루세이더" => new List<string> { "팔라딘" },
+            "템플러" => new List<string> { "세인트" },
+            _ => new List<string>()
+        };
+    }
+
+    private void ApplySecondJobBonus(string subJob)
+    {
+        switch (subJob)
+        {
+            case "버서커": STR += 10; break;
+            case "가디언": DEF += 10; break;
+            case "어쌔신": DEX += 10; break;
+            case "섀도우댄서": DEX += 5; INT += 5; break;
+            case "아크메이지": INT += 10; break;
+            case "소서러": INT += 7; DEF += 3; break;
+            case "크루세이더": STR += 5; INT += 5; break;
+            case "템플러": DEF += 5; INT += 5; break;
+        }
+    }
+
+    private void ApplyThirdJobBonus(string thirdJob)
+    {
+        switch (thirdJob)
+        {
+            case "블러드나이트": STR += 15; DEF -= 5; break;
+            case "아이언월": DEF += 15; break;
+            case "나이트크로우": DEX += 15; break;
+            case "팬텀댄서": INT += 10; DEX += 5; break;
+            case "엘더위치": INT += 15; break;
+            case "디멘터": INT += 10; DEF += 5; break;
+            case "팔라딘": STR += 7; DEF += 7; break;
+            case "세인트": INT += 10; HP += 20; break;
+        }
+    }
 }
