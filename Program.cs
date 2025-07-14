@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Text_RPG;
 
@@ -41,6 +42,10 @@ class Program
             Console.WriteLine("\n저장하시겠습니까? (Y/N):");
 
             if (Console.ReadLine().ToUpper() == "Y") Save.SaveGame();
+
+            Console.WriteLine("\n저장하시겠습니까? (Y/N):");
+            if (Console.ReadLine().ToUpper() == "Y")
+                SaveGame();
 
             Console.WriteLine(" 계속하려면 Enter...");
             Console.ReadLine();
