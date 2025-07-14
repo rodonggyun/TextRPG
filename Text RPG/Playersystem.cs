@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-class Player
+public class Player
 {
     public string Name { get; set; }
     public string Job { get; set; }
