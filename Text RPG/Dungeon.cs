@@ -12,6 +12,7 @@ public class MonsterInfo
     public int type;
     public string name;
     public int hp;
+    public int maxHp;
     public int level;
     public int exp;
     public bool dead;
@@ -139,7 +140,7 @@ public class Dungeon
     { //몬스터 랜덤 등장
         appearMonsters.Clear();  // 이전 몬스터들 삭제
 
-        if (battleInfo.floor == 10)
+        if (battleInfo.floor == 1)
         {
             BossInfo boss = bossManager.GetBossByFloor(battleInfo.floor);
 
@@ -271,26 +272,44 @@ public class Dungeon
 
     void EnemyPhase(Player player)
     {
-        if (!battleInfo.myTurn && battleInfo.eTurn) //몬스터 차례일 때
+        if (!battleInfo.myTurn && battleInfo.eTurn)
         {
-            for (int i = 0; i < appearMonsters.Count; i++)
+            foreach (var monster in appearMonsters)   // 생성된 몬스터 하나하나씩 턴 주기
             {
-                if (!appearMonsters[i].dead) //등장한 몬스터가 죽어있지 않을 때
+                if (monster.dead) continue;           // foreach에서 몬스터 죽어 있으면 continue로 건너뛰고 다른 몬스터 턴 시작
+
+                Console.WriteLine("▶ 몬스터의 차례입니다!\n");
+                Console.WriteLine($"Lv.{monster.level} {monster.name}의 공격!");
+
+                // 보스 여부 확인 및 스킬 사용
+                if (monster is BossInfo boss)
                 {
-                    Console.WriteLine("▶ 몬스터의 차례입니다!\n");
-                    Console.WriteLine($"Lv.{appearMonsters[i].level} {appearMonsters[i].name}의 공격!");
-                    Console.WriteLine($"{appearMonsters[i].atk}만큼의 데미지가 달았습니다.\n");
-                    Console.WriteLine($"\n[{player.Name} - {player.Job}] (Lv. {player.Level})");
-                    Console.Write($"HP: {player.HP}");
-                    player.HP -= appearMonsters[i].atk;
-                    Console.WriteLine($" -> {player.HP}\n");
-                    Console.WriteLine("계속하려면 아무 키나 누르세요...");
-                    Console.ReadKey(true); //키 입력 대기, true는 입력문자 안 보이게
-                    Console.Clear();
+                    // MaxHp가 있어야 함 (생성 시 저장해둬야 함)
+                    if (boss.hp <= boss.maxHp * 20 / 100)
+                    {
+                        boss.UseSpecialSkill(player);
+                        Console.WriteLine($"\n[{player.Name}]의 HP: {player.HP}");
+                        Console.WriteLine("계속하려면 아무 키나 누르세요...");
+                        Console.ReadKey(true);
+                        Console.Clear();
+                        continue;
+                    }
                 }
-                battleInfo.eTurn = false;
-                battleInfo.myTurn = true;
+
+                // 일반 몬스터의 기본 공격
+                Console.WriteLine($"{monster.atk}만큼의 데미지를 입었습니다.\n");
+                Console.WriteLine($"\n[{player.Name} - {player.Job}] (Lv. {player.Level})");
+                Console.Write($"HP: {player.HP}");
+                player.HP -= monster.atk;
+                Console.WriteLine($" -> {player.HP}\n");
+
+                Console.WriteLine("계속하려면 아무 키나 누르세요...");
+                Console.ReadKey(true);
+                Console.Clear();
             }
+
+            battleInfo.eTurn = false;
+            battleInfo.myTurn = true;
         }
     }
 

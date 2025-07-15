@@ -16,6 +16,7 @@ namespace Text_RPG
             this.name = name;
             this.level = level;
             this.hp = baseHp + level * 15;
+            this.maxHp = baseHp + level * 15;
             this.atk = level * 4;
             this.exp = level * 50;
             this.gold = level * 20;
@@ -26,6 +27,7 @@ namespace Text_RPG
         public void UseSpecialSkill(Player player)
         {
             int damage = atk * 2;
+            Console.WriteLine($"{name}이(가) 스킬을 사용 하였다!");
             Console.WriteLine($"\n{name}의 특수기 [{SpecialSkill}] 발동! {damage} 데미지!");
             player.HP -= damage;
         }
