@@ -39,6 +39,11 @@ namespace Text_RPG
             {
                 if (selection == availableSkills.Count)
                 { //마지막은 일반 공격이니깐
+                    Random rand = new Random();
+                    double variation = rand.NextDouble() * 0.2 - 0.1;  // 오차범위 +-10%. -0.1 ~ +0.1
+                    double rawDamage = player.AttackPower * (1 + variation);
+                    int finalDamage = (int)Math.Ceiling(rawDamage); //올림
+
                     int damage = player.AttackPower;
                     enemy.hp -= damage;
                     Console.WriteLine($"\n▶ 일반 공격! {enemy.name}에게 {damage}의 피해를 입혔습니다!");
@@ -49,6 +54,18 @@ namespace Text_RPG
                     Console.WriteLine($"\n▶ {selectedSkill.Name} 스킬을 사용합니다!");
                     //선택한 스킬 효과 적용할 코드 필요함
                 }
+
+                if (enemy.hp <= 0) {
+                    enemy.dead = true;
+                    Console.WriteLine($"\n{enemy.name}을(를) 처치했습니다!\n");
+                    player.Gold += enemy.gold;
+                    Console.WriteLine($"{enemy.gold}의 골드를 획득했습니다!");
+                    player.GainExp(enemy.exp); //경험치 획득 출력, 레벨업까지 있음
+                    enemy.hp = 0;
+                }
+                Console.WriteLine("계속하려면 아무 키나 누르세요...");
+                Console.ReadKey(true);
+                Console.Clear();
             }
         }
     }
