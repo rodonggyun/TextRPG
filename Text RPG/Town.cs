@@ -10,13 +10,14 @@ public class Town
             int selected = MenuSelector.Select("마을에 오신 것을 환영합니다!", new List<string>
             {
                 "상점에 들어간다",
-                "쉼터에서 휴식한다",
+                "호텔에서 휴식한다",
+                "대장간에 간다",
                 "마을을 떠난다"
             }, true);
 
             Console.Clear();
 
-            if (selected == -1 || selected == 2)
+            if (selected == -1 || selected == 3)
             {
                 Console.WriteLine("마을을 떠납니다...");
                 break;
@@ -28,7 +29,10 @@ public class Town
                     EnterShop(player);
                     break;
                 case 1:
-                    RestAtInn(player);
+                    RestAtHotel(player);
+                    break;
+                case 2:
+                    EnterForge(player);
                     break;
             }
 
@@ -43,11 +47,20 @@ public class Town
         Console.WriteLine("아직은 아이템 시스템이 구현되지 않았습니다!");
     }
 
-    private void RestAtInn(Player player)
+    private void RestAtHotel(Player player)
     {
-        Console.WriteLine("[쉼터]");
+        Console.WriteLine("[호텔]");
         player.HP = player.MaxHP;
-        Console.WriteLine($"{player.Name} 님이 휴식을 취하고 HP가 모두 회복되었습니다!");
+        Console.WriteLine($"{player.Name} 님이 호텔에서 휴식을 취하고 HP를 모두 회복했습니다!");
     }
+
+    private void EnterForge(Player player)
+    {
+        Console.WriteLine("[대장간]");
+        Console.WriteLine("장비 강화 기능은 아직 준비 중입니다.");
+        // TODO: 장비 선택, 강화 확률, 강화 비용, 실패 여부 등 구현 예정
+    }
+
+    
 }
 
