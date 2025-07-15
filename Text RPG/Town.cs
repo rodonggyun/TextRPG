@@ -4,7 +4,7 @@ using System.Linq;
 
 public class Town
 {
-    public void Enter(Player player)
+    public void Enter(Player player) // 마을에 입장하는 메소드
     {
         while (true)
         {
