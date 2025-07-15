@@ -123,9 +123,9 @@ public class Dungeon
     {
         if (!battleInfo.myTurn && battleInfo.eTurn) //몬스터 차례일 때
         {
-            if (!appearMonsters.dead) //등장한 몬스터가 죽어있지 않을 때
+            for (int i = 0; i < appearMonsters.Count; i++)
             {
-                for (int i = 0; i < appearMonsters.Count; i++)
+                if (!appearMonsters[i].dead) //등장한 몬스터가 죽어있지 않을 때
                 {
                     Console.WriteLine($"{appearMonsters[i].name}이(가) 공격합니다!");
                     Console.WriteLine($"{appearMonsters[i].atk}만큼의 데미지가 달았습니다.");
