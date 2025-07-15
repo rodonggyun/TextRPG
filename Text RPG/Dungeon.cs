@@ -72,14 +72,16 @@ public class Dungeon
             Console.WriteLine($"EXP: {Exp}/{ExpToLevel} | 남은 스탯 포인트: {StatPoints}");
             Console.WriteLine($"▶ 공격력: {AttackPower} | 회피율: {Evasion} | 방어력: {Defense}"); */
 
-            string[] options = { "공격한다.", "도망간다." };
-            int choice = ShowMenu(options);
+            int selected = MenuSelector.Select("몬스터가 등장했다! 무엇을 하시겠습니까?", new List<string>
+            {
+                "공격한다.", "도망간다."
+            });
 
-            if (choice == 0)
+            if (selected == 0)
             {
                 PlayerPhase();
             }
-            else if (choice == 1)
+            else if (selected == 1)
             {
                 Run();
                 break;
@@ -190,42 +192,5 @@ public class Dungeon
         //마을로 돌아가기, 전투 계속하기 선택 가능
         //전투 계속하기 누르면 Battle() 메서드 호출
         //추후 탑 층수 올라가는 변수, 방 고르는 함수 필요함
-    }
-
-    int ShowMenu(string[] options) //방향키 움직이는 함수
-    {
-        int selected = 0;
-        ConsoleKey key;
-
-        int cursorTop = Console.CursorTop; // 현재 커서 위치 저장 (몬스터 출력 후 위치)
-
-        do
-        {
-            // 메뉴 출력 부분만 갱신
-            Console.SetCursorPosition(0, cursorTop);
-
-            for (int i = 0; i < options.Length; i++)
-            {
-                // 줄 지우기: 출력 전에 현재 줄 clear
-                Console.Write(new string(' ', Console.WindowWidth));
-                Console.SetCursorPosition(0, cursorTop + i);
-
-                if (i == selected)
-                    Console.WriteLine("▶ " + options[i]);
-                else
-                    Console.WriteLine("  " + options[i]);
-            }
-
-            ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-            key = keyInfo.Key;
-
-            if (key == ConsoleKey.UpArrow)
-                selected = (selected - 1 + options.Length) % options.Length;
-            else if (key == ConsoleKey.DownArrow)
-                selected = (selected + 1) % options.Length;
-
-        } while (key != ConsoleKey.Enter && key != ConsoleKey.Spacebar);
-
-        return selected;
     }
 }
