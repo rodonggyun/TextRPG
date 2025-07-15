@@ -10,6 +10,21 @@ using static Town;
 
 public class Player
 {
+    public int TotalSTR => STR
+    + (EquippedWeapon != null ? EquippedWeapon.STR : 0)
+    + (EquippedArmor != null ? EquippedArmor.STR : 0);
+
+    public int TotalDEX => DEX
+        + (EquippedWeapon != null ? EquippedWeapon.DEX : 0)
+        + (EquippedArmor != null ? EquippedArmor.DEX : 0);
+
+    public int TotalINT => INT
+        + (EquippedWeapon != null ? EquippedWeapon.INT : 0)
+        + (EquippedArmor != null ? EquippedArmor.INT : 0);
+
+    public int TotalDEF => DEF
+        + (EquippedWeapon != null ? EquippedWeapon.DEF : 0)
+        + (EquippedArmor != null ? EquippedArmor.DEF : 0);
     public string Name { get; set; }
     public string Job { get; set; }
     public string SubJob;
@@ -36,12 +51,13 @@ public class Player
     {
         Console.WriteLine($"\n[{Name} - {Job}] (Lv. {Level})");
         Console.WriteLine($"HP: {HP}/{MaxHP}");
-        Console.WriteLine($"STR: {STR} | DEX: {DEX} | INT: {INT} | DEF: {DEF}");
+        Console.WriteLine($"STR: {STR} {(TotalSTR > STR ? $"+{TotalSTR - STR}" : "")} | DEX: {DEX} {(TotalDEX > DEX ? $"+{TotalDEX - DEX}" : "")} | INT: {INT} {(TotalINT > INT ? $"+{TotalINT - INT}" : "")} | DEF: {DEF} {(TotalDEF > DEF ? $"+{TotalDEF - DEF}" : "")}");
         Console.WriteLine($"EXP: {Exp}/{ExpToLevel} | 남은 스탯 포인트: {StatPoints}");
         Console.WriteLine($"▶ 공격력: {AttackPower} | 회피율: {Evasion} | 방어력: {Defense}");
         Console.WriteLine($"▶ 경험치 보정률: {ExpBonus * 100:F0}%");
         Console.WriteLine($"마지막 저장: {SaveTime:yyyy-MM-dd HH:mm:ss}");
     }
+
     public void GainExp(int baseAmount)
     {
         int actualAmount = (int)(baseAmount * ExpBonus); // 보정 적용
@@ -94,10 +110,10 @@ public class Player
         {
             return Job switch
             {
-                "전사" => STR,
-                "도적" => DEX,
-                "마법사" => INT,
-                "성기사" => STR,
+                "전사" => TotalSTR,
+                "도적" => TotalDEX,
+                "마법사" => TotalINT,
+                "성기사" => TotalSTR,   
                 _ => 0
             };
         }
@@ -134,7 +150,7 @@ public class Player
         }
     }
 
-    public int Defense => DEF;
+    public int Defense => TotalDEF;
 
     public void CheckForSecondJobChange()
     {
