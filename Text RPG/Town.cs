@@ -232,7 +232,7 @@ public class Town
         if (total == 0)
         {
             Console.Clear();
-            Console.WriteLine("🎒 인벤토리가 비었습니다.");
+            Console.WriteLine("인벤토리가 비었습니다.");
             Console.ReadKey();
             return;
         }
@@ -243,7 +243,7 @@ public class Town
         while (true)
         {
             Console.Clear();
-            Console.WriteLine("🎒 [인벤토리 - 방향키 ↑↓로 이동, Z: 장착/해제, X: 나가기]\n");
+            Console.WriteLine("[인벤토리 - 방향키 ↑↓로 이동, Z: 장착/해제, X: 나가기]\n");
 
             int idx = 0;
             Console.WriteLine("[무기]");
