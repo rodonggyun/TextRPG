@@ -17,13 +17,19 @@ public class MonsterInfo
     public int atk;
 }
 
+public class BattleInfo
+{
+    public bool myTurn = true; //플레이어 차례, 기본값 true
+    public bool eTurn = false; //몬스터 차례
+}
+
 // 전투 및 선택지 관련 클래스
 public class Dungeon
 {
-    //main 함수에서
-    ///Dungeon dungeon = new Dungeon();
-    //dungeon.Battle();
-    //으로 함수 호출
+    /* main 함수에서
+    Dungeon dungeon = new Dungeon();
+    dungeon.Battle();
+    으로 함수 호출 */
 
     List<MonsterInfo> monsterList = new List<MonsterInfo>();
     List<MonsterInfo> appearMonsters = new List<MonsterInfo>();
@@ -47,13 +53,13 @@ public class Dungeon
             hp = baseHp + level * 10, //1레벨이면 hp+10, 2레벨이면 hp+20, ...
             level = level,
             exp = level * 10,
-            gold = level * 50,
+            gold = level * 5,
             atk = level * 2,
             dead = false
         };
     }
 
-    void Battle()
+    void Battle() //전투 화면
     {
         Console.Clear(); // 전체 초기화 (1회만)
 
@@ -107,6 +113,26 @@ public class Dungeon
         { //몬스터 출력
             MonsterInfo m = appearMonsters[i];  //appearMonsters의 자료형이 MonsterInfo라 m 앞에 붙임
             Console.WriteLine($"[{i + 1}] Lv.{m.level} {m.name} (HP: {m.hp})");
+        }
+    }
+
+
+    BattleInfo battleInfo = new BattleInfo();
+
+    void EnemyPhase()
+    {
+        if (!battleInfo.myTurn && battleInfo.eTurn) //몬스터 차례일 때
+        {
+            if (!appearMonsters.dead) //등장한 몬스터가 죽어있지 않을 때
+            {
+                for (int i = 0; i < appearMonsters.Count; i++)
+                {
+                    Console.WriteLine($"{appearMonsters[i].name}이(가) 공격합니다!");
+                    Console.WriteLine($"{appearMonsters[i].atk}만큼의 데미지가 달았습니다.");
+                }
+                battleInfo.eTurn = false;
+                battleInfo.myTurn = true;
+            }
         }
     }
 
