@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Town
 {
@@ -44,18 +45,113 @@ public class Town
             Console.ReadKey();
         }
     }
-
+    private List<Item> ShopItems = new List<Item>
+    {
+         new Item("체력 회복 포션", ItemType.Consumable, 100, 50, "HP")
+        
+    };
     private void EnterShop(Player player)
     {
-        Console.WriteLine("[상점]");
-        Console.WriteLine("아직은 아이템 시스템이 구현되지 않았습니다!");
+        while (true)
+        {
+            int selected = MenuSelector.Select($"[상점] 보유 골드: {player.Gold}G\n무엇을 하시겠습니까?", new List<string>
+        {
+            "아이템 구매", "아이템 판매", "나가기"
+        }, true);
+
+            Console.Clear();
+            if (selected == -1 || selected == 2) break;
+
+            switch (selected)
+            {
+                case 0: BuyItemFromShop(player, ShopItems); break;
+                case 1: SellConsumable(player); break;
+            }
+        }
     }
+    private void BuyItemFromShop(Player player, List<Item> items)
+    {
+        List<Item> buyable = new List<Item>();
+        List<string> options = new List<string>();
+
+        foreach (var item in items)
+        {
+            buyable.Add(item);
+            string desc = item.Type == ItemType.Consumable
+                ? $"{item.Name} [가격:{item.Price}G] (효과: {item.EffectType} +{item.EffectValue})"
+                : $"{item.Name} [가격:{item.Price}G]";
+            options.Add(desc);
+        }
+
+        int selected = MenuSelector.Select($"구매할 아이템을 선택하세요", options, true);
+        if (selected == -1) return;
+
+        var itemToBuy = buyable[selected];
+        if (player.Gold < itemToBuy.Price)
+        {
+            Console.WriteLine("골드가 부족합니다!");
+        }
+        else
+        {
+            player.Gold -= itemToBuy.Price;
+            player.Inventory.Add(new Item(itemToBuy.Name, itemToBuy.Type, itemToBuy.Price, effectValue: itemToBuy.EffectValue, effectType: itemToBuy.EffectType));
+            Console.WriteLine($"{itemToBuy.Name}을(를) 구매했습니다! 남은 골드: {player.Gold}G");
+        }
+        Console.ReadKey();
+    }
+
+    private void SellConsumable(Player player)
+    {
+        var sellables = player.Inventory.FindAll(i => i.Type == ItemType.Consumable);
+        if (sellables.Count == 0)
+        {
+            Console.WriteLine("판매할 소모품이 없습니다.");
+            Console.ReadKey();
+            return;
+        }
+
+        List<string> options = new List<string>();
+        foreach (var item in sellables)
+            options.Add($"{item.Name} [판매가:{item.SellPrice}G] (효과: {item.EffectType} +{item.EffectValue})");
+
+        int selected = MenuSelector.Select($"판매할 소모품을 선택하세요", options, true);
+        if (selected == -1) return;
+
+        var itemToSell = sellables[selected];
+        player.Gold += itemToSell.SellPrice;
+        player.Inventory.Remove(itemToSell);
+        Console.WriteLine($"{itemToSell.Name}을(를) 판매했습니다! 현재 골드: {player.Gold}G");
+        Console.ReadKey();
+    }
+
 
     private void RestAtHotel(Player player)
     {
-        Console.WriteLine("[호텔]");
+        int cost = (int)(player.Gold * 0.1);
+        if (cost <= 0)
+        {
+            Console.WriteLine("[호텔] 소지금이 너무 적어 호텔에서 쉴 수 없습니다.");
+            return;
+        }
+        Console.WriteLine($"[호텔] 숙박료는 전체 소지금의 10% ({cost}G) 입니다.");
+        Console.Write("숙박하시겠습니까? (Y/N): ");
+        var input = Console.ReadLine();
+        if (input.ToLower() != "y")
+        {
+            Console.WriteLine("호텔 이용을 취소했습니다.");
+            return;
+        }
+
+        if (player.Gold < cost)
+        {
+            Console.WriteLine("골드가 부족하여 호텔을 이용할 수 없습니다.");
+            return;
+        }
+
+        player.Gold -= cost;
         player.HP = player.MaxHP;
-        Console.WriteLine($"{player.Name} 님이 호텔에서 휴식을 취하고 HP를 모두 회복했습니다!");
+        Console.WriteLine($"{player.Name} 님이 {cost}G를 내고 호텔에서 휴식, HP를 모두 회복했습니다!");
+        Console.WriteLine($"남은 골드: {player.Gold}G");
     }
     // 전사 무기
     private List<Item> WarriorWeapons = new List<Item>
@@ -219,15 +315,18 @@ public class Town
         Console.ReadKey();
     }
 
-    private void OpenInventory(Player player)
+    public void OpenInventory(Player player)
     {
+
         // 무기/방어구로 분리와 정렬
         var weapons = player.Inventory.FindAll(i => i.Type == ItemType.Weapon).OrderBy(i => i.Name).ToList();
         var armors = player.Inventory.FindAll(i => i.Type == ItemType.Armor).OrderBy(i => i.Name).ToList();
+        var consumables = player.Inventory.FindAll(i => i.Type == ItemType.Consumable).OrderBy(i => i.Name).ToList();
 
         List<Item> allItems = new List<Item>();
         allItems.AddRange(weapons);
         allItems.AddRange(armors);
+        allItems.AddRange(consumables);
 
         int total = allItems.Count;
         if (total == 0)
@@ -244,7 +343,7 @@ public class Town
         while (true)
         {
             Console.Clear();
-            Console.WriteLine("[인벤토리 - 방향키 ↑↓로 이동, Z: 장착/해제, X: 나가기]\n");
+            Console.WriteLine("[인벤토리 - 방향키 ↑↓로 이동, Z: 장착/해제/사용, X: 나가기]\n");
 
             int idx = 0;
             Console.WriteLine("[무기]");
@@ -268,6 +367,17 @@ public class Town
                 else
                     Console.Write("  ");
                 Console.WriteLine($"{a.Name} (STR:{a.STR} DEX:{a.DEX} INT:{a.INT} DEF:{a.DEF}){(isEquipped ? " [장착중]" : "")}");
+                idx++;
+            }
+
+            Console.WriteLine("\n[소모품]");
+            foreach (var c in consumables)
+            {
+                if (selected == idx)
+                    Console.Write("> ");
+                else
+                    Console.Write("  ");
+                Console.WriteLine($"{c.Name} (효과: {c.EffectType} +{c.EffectValue})");
                 idx++;
             }
 
@@ -298,7 +408,7 @@ public class Town
                         Console.WriteLine($"{w.Name} 무기 장착!");
                     }
                 }
-                else
+                else if (selected < weapons.Count + armors.Count)
                 {
                     var a = armors[selected - weapons.Count];
                     if (player.EquippedArmor == a)
@@ -311,6 +421,20 @@ public class Town
                         player.EquippedArmor = a;
                         Console.WriteLine($"{a.Name} 방어구 장착!");
                     }
+
+                }
+                else
+                {
+                    // 소모품 사용
+                    var c = consumables[selected - weapons.Count - armors.Count];
+                    if (c.EffectType == "HP")
+                    {
+                        player.HP = Math.Min(player.MaxHP, player.HP + c.EffectValue);
+                        Console.WriteLine($"{c.Name}을(를) 사용해 HP {c.EffectValue}만큼 회복!");
+                    }
+                    
+                    player.Inventory.Remove(c);
+                    Console.ReadKey();
                 }
                 Console.ReadKey();
             }
@@ -410,7 +534,8 @@ public class Town
         public string Name { get; set; }
         public ItemType Type { get; set; }
         public int EffectValue { get; set; }
-
+        
+        public string EffectType { get; set; }  // "HP" 또는 "MP"
         public int UpgradeLevel { get; set; } = 0; 
         public int Price { get; set; }
         public int SellPrice { get; set; }
@@ -430,6 +555,15 @@ public class Town
             DEX = dex;
             INT = intel;
             DEF = def;
+        }
+        public Item(string name, ItemType type, int price, int effectValue, string effectType)
+        {
+            Name = name;
+            Type = type;
+            Price = price;
+            SellPrice = (int)(price * 0.7);
+            EffectValue = effectValue;
+            EffectType = effectType;
         }
     }
 
