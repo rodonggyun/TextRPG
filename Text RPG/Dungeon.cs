@@ -44,10 +44,10 @@ public class Dungeon
         {
             type = type,
             name = name,
-            hp = baseHp + level * 10, //1레벨이면 hp10, 2레벨이면 hp20, ...
+            hp = baseHp + level * 10, //1레벨이면 hp+10, 2레벨이면 hp+20, ...
             level = level,
             exp = level * 10,
-            gold = level * 5,
+            gold = level * 50,
             atk = level * 2,
             dead = false
         };
