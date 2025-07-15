@@ -99,15 +99,15 @@ public class Town
     // 성기사 무기
     private List<Item> PaladinWeapons = new List<Item>
     {
-        new Item("목공용망치", ItemType.Weapon, 30, def:1),
-        new Item("수련용 해머", ItemType.Weapon, 50, def:2),
-        new Item("모험자의 방패", ItemType.Weapon, 100, def:3),
-        new Item("성기사의 대검", ItemType.Weapon, 200, def:5),
-        new Item("교단장의 건틀랫", ItemType.Weapon, 400, def:8),
-        new Item("끝없는 희망", ItemType.Weapon, 800, def:12),
-        new Item("충만한 광휘", ItemType.Weapon, 1600, def:18),
-        new Item("혹서의 손길", ItemType.Weapon, 3200, def:25),
-        new Item("태양불꽃 망토", ItemType.Weapon, 5000, def:35)
+        new Item("목공용망치", ItemType.Weapon, 30, str:1),
+        new Item("수련용 해머", ItemType.Weapon, 50, str:2),
+        new Item("모험자의 방패", ItemType.Weapon, 100, str:3),
+        new Item("성기사의 대검", ItemType.Weapon, 200, str:5),
+        new Item("교단장의 건틀랫", ItemType.Weapon, 400, str:8),
+        new Item("끝없는 희망", ItemType.Weapon, 800, str:12),
+        new Item("충만한 광휘", ItemType.Weapon, 1600, str:18),
+        new Item("혹서의 손길", ItemType.Weapon, 3200, str:25),
+        new Item("태양불꽃 망토", ItemType.Weapon, 5000, str:35)
     };
     // 공통 방어구
     private List<Item> ArmorList = new List<Item>
@@ -138,17 +138,18 @@ public class Town
         {
             int selected = MenuSelector.Select($"[대장간] 보유 골드: {player.Gold}G\n무엇을 하시겠습니까?", new List<string>
         {
-            "무기 구매", "방어구 구매", "장비 판매", "나가기"
+            "무기 구매", "방어구 구매", "장비 판매", "무기 강화", "나가기"
         }, true);
 
             Console.Clear();
-            if (selected == -1 || selected == 3) break;
+            if (selected == -1 || selected == 4) break;
 
             switch (selected)
             {
                 case 0: BuyItem(player, GetJobWeaponList(player.Job)); break;
                 case 1: BuyItem(player, ArmorList); break;
                 case 2: SellItem(player); break;
+                case 3: UpgradeWeapon(player); break;
             }
         }
     }
@@ -319,8 +320,84 @@ public class Town
             }
         }
     }
+    private void UpgradeWeapon(Player player)
+    {
+        // 무기만 골라서 정렬
+        var weapons = player.Inventory.FindAll(i => i.Type == ItemType.Weapon);
+        if (weapons.Count == 0)
+        {
+            Console.WriteLine("강화할 무기가 없습니다.");
+            Console.ReadKey();
+            return;
+        }
 
-    
+        List<string> options = new List<string>();
+        foreach (var w in weapons)
+            options.Add($"{(w.UpgradeLevel > 0 ? $"+{w.UpgradeLevel} " : "")}{w.Name} (STR:{w.STR} DEX:{w.DEX} INT:{w.INT} DEF:{w.DEF})");
+
+        int selected = MenuSelector.Select("강화할 무기를 선택하세요", options, true);
+        if (selected == -1) return;
+
+        var weapon = weapons[selected];
+
+        if (weapon.UpgradeLevel >= 10)
+        {
+            Console.WriteLine("최대 +10강입니다.");
+            Console.ReadKey();
+            return;
+        }
+
+        if (player.Gold < 1000)
+        {
+            Console.WriteLine("골드가 부족합니다! (1000G 필요)");
+            Console.ReadKey();
+            return;
+        }
+
+        int nextUpgrade = weapon.UpgradeLevel + 1;
+        int upgradeChance = Math.Max(1, 16 - nextUpgrade); // +1강: 15%, ... +10강: 1%
+        int destroyChance = 0;
+        if (nextUpgrade >= 5)
+            destroyChance = 2 * (nextUpgrade - 4); // +5:2%, +6:4%, ... +10:12%
+
+        Console.WriteLine($"\n[{weapon.Name}]");
+        Console.WriteLine($"+{weapon.UpgradeLevel} → +{nextUpgrade} 강화 시도");
+        Console.WriteLine($"강화 확률: {upgradeChance}% / 파괴 확률: {destroyChance}%");
+        Console.WriteLine($"강화 성공 시 능력치가 {nextUpgrade * nextUpgrade}만큼 증가");
+        Console.WriteLine("강화에는 1000골드가 필요합니다.");
+        Console.WriteLine("Z: 강화 시도, X: 취소");
+
+        var key = Console.ReadKey(true).Key;
+        if (key != ConsoleKey.Z) return;
+
+        player.Gold -= 1000;
+        Random rand = new Random();
+        int roll = rand.Next(1, 101);
+
+        if (roll <= upgradeChance)
+        {
+            weapon.UpgradeLevel++;
+            // 강화 능력치 적용(원래 스탯에 덮어쓰기/누적 중 택1: 여기서는 누적 적용)
+            if (weapon.STR > 0) weapon.STR = weapon.STR + (weapon.UpgradeLevel * weapon.UpgradeLevel - (weapon.UpgradeLevel - 1) * (weapon.UpgradeLevel - 1));
+            if (weapon.DEX > 0) weapon.DEX = weapon.DEX + (weapon.UpgradeLevel * weapon.UpgradeLevel - (weapon.UpgradeLevel - 1) * (weapon.UpgradeLevel - 1));
+            if (weapon.INT > 0) weapon.INT = weapon.INT + (weapon.UpgradeLevel * weapon.UpgradeLevel - (weapon.UpgradeLevel - 1) * (weapon.UpgradeLevel - 1));
+            if (weapon.DEF > 0) weapon.DEF = weapon.DEF + (weapon.UpgradeLevel * weapon.UpgradeLevel - (weapon.UpgradeLevel - 1) * (weapon.UpgradeLevel - 1));
+
+            Console.WriteLine($"강화 성공! [{weapon.Name}]이(가) +{weapon.UpgradeLevel}강이 되었습니다!");
+        }
+        else if (destroyChance > 0 && rand.Next(1, 101) <= destroyChance)
+        {
+            Console.WriteLine("강화에 실패하고 무기가 파괴되었습니다!");
+            player.Inventory.Remove(weapon);
+        }
+        else
+        {
+            Console.WriteLine("강화에 실패했습니다. 무기는 안전합니다.");
+        }
+        Console.ReadKey();
+    }
+
+
     public enum ItemType
     {
         Weapon,
@@ -332,8 +409,9 @@ public class Town
     {
         public string Name { get; set; }
         public ItemType Type { get; set; }
-        public int EffectValue { get; set; }  
+        public int EffectValue { get; set; }
 
+        public int UpgradeLevel { get; set; } = 0; 
         public int Price { get; set; }
         public int SellPrice { get; set; }
         public int STR { get; set; }
