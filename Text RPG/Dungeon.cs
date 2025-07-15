@@ -22,6 +22,7 @@ public class BattleInfo
 {
     public bool myTurn = true; //플레이어 차례, 기본값 true
     public bool eTurn = false; //몬스터 차례
+    public int floor = 1;      // 타워 층
 }
 
 // 전투 및 선택지 관련 클래스
@@ -73,6 +74,7 @@ public class Dungeon
 
     BattleInfo battleInfo = new BattleInfo();
     Player player = new Player();
+    BossManager bossManager = new BossManager();
 
 
     public Dungeon()
@@ -129,29 +131,68 @@ public class Dungeon
     { //몬스터 랜덤 등장
         appearMonsters.Clear();  // 이전 몬스터들 삭제
 
-        Random rand = new Random();
-        int monsterCount = rand.Next(1, 5); //한 번에 나오는 몬스터는 1~4마리(랜덤)
+        if (battleInfo.floor == 10)
+        {
+            BossInfo boss = bossManager.GetBossByFloor(battleInfo.floor);
 
-        for (int i = 0; i < monsterCount; i++)
-        { //뽑은 숫자만큼
-            int index = rand.Next(monsterList.Count); //몬스터 랜덤 등장
-            MonsterInfo original = monsterList[index]; //몬스터는 리스트에서 무작위로 가져옴.(얘는 복사한 객체가 아니라 원본 몬스터임)
-
-            MonsterInfo clone = new MonsterInfo() //원본 몬스터에게 피해 안 가게끔 깊은 복사
+            if (boss != null)
             {
-                type = original.type,
-                name = original.name,
-                hp = original.hp,
-                level = original.level,
-                exp = original.exp,
-                dead = false,
-                gold = original.gold,
-                atk = original.atk
-            };
-
-            appearMonsters.Add(clone); //출현 몬스터 리스트에 복제한 값 넣기
+                appearMonsters.Add(boss);  // 보스를 출현시킴
+                Console.WriteLine($"10층의 보스 \"{boss.name}\"가 나타났습니다!");
+                Console.WriteLine($"Lv.{boss.level} {boss.name} (HP: {boss.hp})");
+            }
         }
-        MonsterPrint();
+
+        else if (battleInfo.floor == 20)
+        {
+            BossInfo boss = bossManager.GetBossByFloor(battleInfo.floor);
+
+            if (boss != null)
+            {
+                appearMonsters.Add(boss);  // 보스를 출현시킴
+                Console.WriteLine($"20층의 보스 \"{boss.name}\"가 나타났습니다!");
+                Console.WriteLine($"Lv.{boss.level} {boss.name} (HP: {boss.hp})");
+            }
+        }
+
+        else if (battleInfo.floor == 30)
+        {
+            BossInfo boss = bossManager.GetBossByFloor(battleInfo.floor);
+
+            if (boss != null)
+            {
+                appearMonsters.Add(boss);  // 보스를 출현시킴
+                Console.WriteLine($"30층의 보스 \"{boss.name}\" 가 나타났습니다!");
+                Console.WriteLine($"Lv.{boss.level} {boss.name} (HP: {boss.hp})");
+            }
+        }
+
+        else
+        {
+            Random rand = new Random();
+            int monsterCount = rand.Next(1, 5); //한 번에 나오는 몬스터는 1~4마리(랜덤)
+
+            for (int i = 0; i < monsterCount; i++)
+            { //뽑은 숫자만큼
+                int index = rand.Next(monsterList.Count); //몬스터 랜덤 등장
+                MonsterInfo original = monsterList[index]; //몬스터는 리스트에서 무작위로 가져옴.(얘는 복사한 객체가 아니라 원본 몬스터임)
+
+                MonsterInfo clone = new MonsterInfo() //원본 몬스터에게 피해 안 가게끔 깊은 복사
+                {
+                    type = original.type,
+                    name = original.name,
+                    hp = original.hp,
+                    level = original.level,
+                    exp = original.exp,
+                    dead = false,
+                    gold = original.gold,
+                    atk = original.atk
+                };
+
+                appearMonsters.Add(clone); //출현 몬스터 리스트에 복제한 값 넣기
+            }
+            MonsterPrint();
+        } 
     }
 
     void MonsterPrint()

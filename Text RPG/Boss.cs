@@ -45,5 +45,12 @@ namespace Text_RPG
             };
         }
 
+        public BossInfo GetBossByFloor(int floor)
+        {
+            if (floor == 10) return BossList[0];
+            if (floor == 20) return BossList[1];
+            if (floor == 30) return BossList[2];
+            return null;
+        }
     }
 }
