@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-class MonsterInfo
+public class MonsterInfo
 {
     public int type;
     public string name;
@@ -18,12 +18,24 @@ class MonsterInfo
 }
 
 // 전투 및 선택지 관련 클래스
-public static class Dungeon
+public class Dungeon
 {
+    //main 함수에서
+    ///Dungeon dungeon = new Dungeon();
+    //dungeon.Battle();
+    //으로 함수 호출
 
-    static List<MonsterInfo> appearMonsters = new List<MonsterInfo>();
+    List<MonsterInfo> monsterList = new List<MonsterInfo>();
+    List<MonsterInfo> appearMonsters = new List<MonsterInfo>();
 
-    static MonsterInfo CreateMonster(int type, string name, int baseHp, int minLevel, int maxLevel)
+    public Dungeon()
+    { //몬스터 리스트 생성자, 생성자에서 초기화
+        monsterList.Add(CreateMonster(1, "슬라임", 10, 1, 4));  //슬라임 레벨 1일때 체력 20부터 등장
+        monsterList.Add(CreateMonster(2, "고블린", 15, 1, 6)); //고블린 1레벨은 체력 15부터 등장
+        monsterList.Add(CreateMonster(3, "오크", 20, 2, 7));
+    }
+
+    MonsterInfo CreateMonster(int type, string name, int baseHp, int minLevel, int maxLevel)
     { //몬스터 생성
         Random rand = new Random();
         int level = rand.Next(minLevel, maxLevel + 1); //레벨은 최소 레벨 ~ 최대 레벨 랜덤 범위
@@ -41,15 +53,7 @@ public static class Dungeon
         };
     }
 
-    static List<MonsterInfo> monsterList = new List<MonsterInfo>() { //몬스터 리스트 생성
-        CreateMonster(1, "슬라임", 10, 1, 4),  //슬라임 레벨 1일때 체력 20부터 등장
-        CreateMonster(2, "고블린", 15, 1, 6), //고블린 1레벨은 체력 15부터 등장
-        CreateMonster(3, "오크", 20, 2, 7)
-    };
-
-    
-    // 메인에서 배틀 UI 호출할때 필요 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    static void Battle()
+    void Battle()
     {
         Console.Clear(); // 전체 초기화 (1회만)
 
@@ -70,7 +74,7 @@ public static class Dungeon
     }
 
 
-    static void MonsterAppear()
+    void MonsterAppear()
     { //몬스터 랜덤 등장
         Random rand = new Random();
         int monsterCount = rand.Next(1, 5); //한 번에 나오는 몬스터는 1~4마리(랜덤)
@@ -106,7 +110,7 @@ public static class Dungeon
         }
     }
 
-    static int ShowMenu(string[] options) //방향키 움직이는 함수
+    int ShowMenu(string[] options) //방향키 움직이는 함수
     {
         int selected = 0;
         ConsoleKey key;
