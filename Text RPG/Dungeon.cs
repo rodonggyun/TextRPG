@@ -26,6 +26,41 @@ public class BattleInfo
 // 전투 및 선택지 관련 클래스
 public class Dungeon
 {
+    Town inventory = new Town();
+
+    public void Enter(Player player)
+    {
+        while (true)
+        {
+            int selected = MenuSelector.Select("이곳은 던전 입구입니다.", new List<string>
+            {
+                "타워에 들어간다",
+                "인벤토리 열기",
+                "마을로 돌아간다"
+            }, true);
+
+            Console.Clear();
+
+            if (selected == -1 || selected == 2)
+            {
+                Console.WriteLine("마을로 돌아갑니다...");
+                break;
+            }
+
+            switch (selected)
+            {
+                case 0:
+                    Battle(player);
+                    break;
+                case 1:
+                    inventory.OpenInventory(player);
+                    break;
+            }
+
+            Console.WriteLine("\n아무 키나 눌러 계속...");
+            Console.ReadKey();
+        }
+    }
     /* main 함수에서
     Dungeon dungeon = new Dungeon();
     dungeon.Battle();
@@ -59,7 +94,7 @@ public class Dungeon
         };
     }
 
-    void Battle() //전투 화면
+    void Battle(Player player) //전투 화면
     {
         while (true)
         {

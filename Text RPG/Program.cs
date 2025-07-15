@@ -15,7 +15,7 @@ class Program
         {
             int selected = MenuSelector.Select("무엇을 하시겠습니까?", new List<string>
             {
-                "스탯 확인", "저장/불러오기", "마을 방문", "게임 종료" 
+                "스탯 확인", "저장/불러오기", "마을 방문", "던전 입구", "게임 종료"
             });
 
             Console.Clear();
@@ -26,7 +26,12 @@ class Program
                 Town town = new Town();
                 town.Enter(player);
             }
-            else if (selected == 3) break;
+            else if (selected == 3)
+            {
+                Dungeon dungeon = new Dungeon();
+                dungeon.Enter(player);
+            }
+            else if (selected == 4) break;
             Console.WriteLine("\n아무 키나 눌러 계속...");
             Console.ReadKey();
         }
