@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using Text_RPG;
@@ -60,7 +61,7 @@ public class Dungeon
             }
 
             Console.WriteLine("\n아무 키나 눌러 계속...");
-            Console.ReadKey();
+            Console.ReadKey(true);
         }
     }
 
@@ -70,6 +71,7 @@ public class Dungeon
     BattleInfo battleInfo = new BattleInfo();
     Player player = new Player();
     BossManager bossManager = new BossManager();
+    Town town = new Town();
 
     public Dungeon()
     { //몬스터 리스트 생성자, 생성자에서 초기화
@@ -82,6 +84,8 @@ public class Dungeon
     { //몬스터 생성
         Random rand = new Random();
         int level = rand.Next(minLevel, maxLevel + 1); //레벨은 최소 레벨 ~ 최대 레벨 랜덤 범위
+        int damageMultiplier = rand.Next(1, 4); // 1, 2, 3
+        int atk = level * damageMultiplier;
 
         return new MonsterInfo() //객체 생성+초기화
         {
@@ -91,7 +95,7 @@ public class Dungeon
             level = level,
             exp = level * 10,
             gold = level * 5,
-            atk = level * 2,
+            atk = atk,
             dead = false
         };
     }
@@ -103,12 +107,15 @@ public class Dungeon
 
         while (true)
         {
+            Console.Clear();
+
             if (appearMonsters.All(m => m.dead))
             { //몬스터가 다 죽었으면
                 BattleEnd(player); //전투 종료
                 break;
             }
 
+            MonsterPrint();
             PlayerInfo(player);
 
             int selected = ShowMenu.ShowMenus(new List<string>
@@ -198,19 +205,24 @@ public class Dungeon
 
     void MonsterPrint()
     { //등장한 몬스터 출력
-        Console.WriteLine($"몬스터가 나타났다! 무엇을 하시겠습니까?  ({battleInfo.floor}층)\n");
+        Console.WriteLine($"▶ 몬스터가 나타났다! 무엇을 하시겠습니까?  ({battleInfo.floor}층)\n");
         for (int i = 0; i < appearMonsters.Count; i++)
         {
             MonsterInfo m = appearMonsters[i];  //appearMonsters의 자료형이 MonsterInfo라 m 앞에 붙임
+            if (m.dead)
+                Console.ForegroundColor = ConsoleColor.DarkGray; // 죽은 몬스터는 회색으로
+            else
+                Console.ResetColor(); // 살아있는 몬스터는 기본색
             Console.WriteLine($"Lv.{m.level} {m.name} (HP: {m.hp})");
         }
+        Console.ResetColor(); // 색상 초기화 (다른 곳에 영향 안 주도록)
     }
 
     void PlayerInfo(Player player)
     {
-        Console.WriteLine("\n[내 정보]");
-        Console.WriteLine($"\n[{player.Name} - {player.Job}] (Lv. {player.Level})");
-        Console.WriteLine($"HP: {player.HP}/{player.MaxHP} | EXP: {player.Exp}/{player.ExpToLevel}");
+        Console.WriteLine("\n\n[내 정보]");
+        Console.WriteLine($"[{player.Name} - {player.Job}] (Lv. {player.Level})");
+        Console.WriteLine($"HP: {player.HP}/{player.MaxHP} | EXP: {player.Exp}/{player.ExpToLevel} | Gold : {player.Gold}");
         Console.WriteLine($"공격력: {player.AttackPower} | 회피율: {player.Evasion} | 방어력: {player.Defense}\n");
     }
 
@@ -235,13 +247,20 @@ public class Dungeon
             {
                 SkMenu skMenu = new SkMenu();
                 skMenu.UseSkillMenu(player, target); //선택한 몬스터만 공격(스킬사용)
-                battleInfo.myTurn = false; //턴 교체
+                battleInfo.myTurn = false;
                 battleInfo.eTurn = true;
-
+                EnemyPhase(player); //턴 교체
             }
             else
             {
-                Console.WriteLine("해당 몬스터는 이미 죽었습니다.");
+                Console.WriteLine("\n해당 몬스터는 이미 죽었습니다.");
+                Console.WriteLine("\n아무 키나 눌러 계속...");
+                Console.ReadKey(true);
+            }
+
+            if (player.HP <= 0)
+            {
+                BattleEnd(player);
             }
         }
         else
@@ -258,7 +277,7 @@ public class Dungeon
             {
                 if (!appearMonsters[i].dead) //등장한 몬스터가 죽어있지 않을 때
                 {
-                    Console.WriteLine($"Battle!!\n");
+                    Console.WriteLine("▶ 몬스터의 차례입니다!\n");
                     Console.WriteLine($"Lv.{appearMonsters[i].level} {appearMonsters[i].name}의 공격!");
                     Console.WriteLine($"{appearMonsters[i].atk}만큼의 데미지가 달았습니다.\n");
                     Console.WriteLine($"\n[{player.Name} - {player.Job}] (Lv. {player.Level})");
@@ -267,6 +286,7 @@ public class Dungeon
                     Console.WriteLine($" -> {player.HP}\n");
                     Console.WriteLine("계속하려면 아무 키나 누르세요...");
                     Console.ReadKey(true); //키 입력 대기, true는 입력문자 안 보이게
+                    Console.Clear();
                 }
                 battleInfo.eTurn = false;
                 battleInfo.myTurn = true;
@@ -285,8 +305,44 @@ public class Dungeon
 
     void BattleEnd(Player player)
     { //전투 종료
-        //마을로 돌아가기, 전투 계속하기 선택 가능
-        //전투 계속하기 누르면 Battle() 메서드 호출
-        //추후 탑 층수 올라가는 변수, 방 고르는 함수 필요함
+        Console.Clear();
+        if (player.HP <= 0)
+        {
+            Console.WriteLine("당신은 사망했습니다.");
+
+            Console.WriteLine($"\n[{player.Name} - {player.Job}] (Lv. {player.Level})");
+            Console.WriteLine($"HP: {player.HP}/{player.MaxHP} | EXP: {player.Exp}/{player.ExpToLevel}\n");
+
+            player.HP = 10;
+
+            Console.WriteLine("계속하려면 아무 키나 누르세요...");
+            Console.ReadKey(true); //키 입력 대기, true는 입력문자 안 보이게
+
+            town.Enter(player);
+        }
+        else if (player.HP > 0)
+        {
+            if (appearMonsters.All(m => m.dead))
+            {
+                Console.WriteLine($"▶ {battleInfo.floor++}층의 몬스터를 전부 토벌했다!");
+
+                Console.WriteLine($"\n[{player.Name} - {player.Job}] (Lv. {player.Level} | Gold : {player.Gold})");
+                Console.WriteLine($"HP: {player.HP}/{player.MaxHP} | EXP: {player.Exp}/{player.ExpToLevel}\n");
+
+                int selected = ShowMenu.ShowMenus(new List<string>
+                {
+                    "계속 탑을 오른다.", "마을로 돌아간다."
+                });
+
+                if (selected == 0)
+                {
+                    Battle(player);
+                }
+                else if (selected == 1)
+                {
+                    town.Enter(player);
+                }
+            }
+        }
     }
 }
