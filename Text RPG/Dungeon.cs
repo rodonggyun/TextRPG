@@ -118,6 +118,7 @@ public class Dungeon
 
 
     BattleInfo battleInfo = new BattleInfo();
+    Player player = new Player();
 
     void EnemyPhase()
     {
@@ -129,6 +130,7 @@ public class Dungeon
                 {
                     Console.WriteLine($"{appearMonsters[i].name}이(가) 공격합니다!");
                     Console.WriteLine($"{appearMonsters[i].atk}만큼의 데미지가 달았습니다.");
+                    player.HP -= appearMonsters[i].atk;
                 }
                 battleInfo.eTurn = false;
                 battleInfo.myTurn = true;
