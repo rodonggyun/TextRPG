@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static Text_RPG.Skill;
 using Text_RPG;
+using static Text_RPG.Skill;
+using static Town;
 
 
 public class Player
@@ -25,6 +26,10 @@ public class Player
     public int StatPoints { get; set; } = 0;
     public DateTime SaveTime { get; set; } = DateTime.Now;
     public int ExpToLevel => Level * 100;
+    
+    public List<Item> Inventory = new List<Item>();
+    public Item EquippedWeapon = null;
+    public Item EquippedArmor = null;
 
     public void DisplayStats()
     {
