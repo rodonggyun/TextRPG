@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Text_RPG;
 
+
 public class MonsterInfo
 {
     public int type;
@@ -107,8 +108,6 @@ public class Dungeon
             MonsterAppear();
             PlayerInfo();
 
-            Console.WriteLine("몬스터가 나타났다! 무엇을 하시겠습니까?\n");
-
             int selected = ShowMenu.ShowMenus(new List<string>
             {
                 "공격한다.", "도망간다."
@@ -157,7 +156,7 @@ public class Dungeon
 
     void MonsterPrint()
     { //등장한 몬스터 출력
-        Console.WriteLine("Battle!!\n");
+        Console.WriteLine("몬스터가 나타났다! 무엇을 하시겠습니까?\n");
         for (int i = 0; i < appearMonsters.Count; i++)
         {
             MonsterInfo m = appearMonsters[i];  //appearMonsters의 자료형이 MonsterInfo라 m 앞에 붙임
@@ -178,8 +177,7 @@ public class Dungeon
 
     void PlayerPhase()
     { //플레이어 턴
-        MonsterPrint();
-        PlayerInfo();
+        Console.Clear();
 
         List<string> monsterOptions = new List<string>(); //화면 출력용 문자열로 변환
         for (int i = 0; i < appearMonsters.Count; i++)
