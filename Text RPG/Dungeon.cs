@@ -22,7 +22,7 @@ public class BattleInfo
 {
     public bool myTurn = true; //플레이어 차례, 기본값 true
     public bool eTurn = false; //몬스터 차례
-    public int floor = 1;      // 타워 층
+    public int floor = 1;
 }
 
 // 전투 및 선택지 관련 클래스
@@ -64,18 +64,12 @@ public class Dungeon
         }
     }
 
-    /* main 함수에서
-    Dungeon dungeon = new Dungeon();
-    dungeon.Battle();
-    으로 함수 호출 */
-
     List<MonsterInfo> monsterList = new List<MonsterInfo>();
     List<MonsterInfo> appearMonsters = new List<MonsterInfo>();
 
     BattleInfo battleInfo = new BattleInfo();
     Player player = new Player();
     BossManager bossManager = new BossManager();
-
 
     public Dungeon()
     { //몬스터 리스트 생성자, 생성자에서 초기화
@@ -104,11 +98,18 @@ public class Dungeon
 
     void Battle(Player player) //전투 화면
     {
+        Console.Clear();
+        MonsterAppear();
+
         while (true)
         {
-            Console.Clear();
-            MonsterAppear();
-            PlayerInfo();
+            if (appearMonsters.All(m => m.dead))
+            { //몬스터가 다 죽었으면
+                BattleEnd(player); //전투 종료
+                break;
+            }
+
+            PlayerInfo(player);
 
             int selected = ShowMenu.ShowMenus(new List<string>
             {
@@ -117,7 +118,7 @@ public class Dungeon
 
             if (selected == 0)
             {
-                PlayerPhase();
+                PlayerPhase(player);
             }
             else if (selected == 1)
             {
@@ -192,12 +193,12 @@ public class Dungeon
                 appearMonsters.Add(clone); //출현 몬스터 리스트에 복제한 값 넣기
             }
             MonsterPrint();
-        } 
+        }
     }
 
     void MonsterPrint()
     { //등장한 몬스터 출력
-        Console.WriteLine("몬스터가 나타났다! 무엇을 하시겠습니까?\n");
+        Console.WriteLine($"몬스터가 나타났다! 무엇을 하시겠습니까?  ({battleInfo.floor}층)\n");
         for (int i = 0; i < appearMonsters.Count; i++)
         {
             MonsterInfo m = appearMonsters[i];  //appearMonsters의 자료형이 MonsterInfo라 m 앞에 붙임
@@ -205,18 +206,16 @@ public class Dungeon
         }
     }
 
-    void PlayerInfo()
+    void PlayerInfo(Player player)
     {
         Console.WriteLine("\n[내 정보]");
         Console.WriteLine($"\n[{player.Name} - {player.Job}] (Lv. {player.Level})");
-        Console.WriteLine($"HP: {player.HP}/{player.MaxHP}");
-        Console.WriteLine($"EXP: {player.Exp}/{player.ExpToLevel} | 남은 스탯 포인트: {player.StatPoints}");
+        Console.WriteLine($"HP: {player.HP}/{player.MaxHP} | EXP: {player.Exp}/{player.ExpToLevel}");
         Console.WriteLine($"공격력: {player.AttackPower} | 회피율: {player.Evasion} | 방어력: {player.Defense}\n");
-
     }
 
 
-    void PlayerPhase()
+    void PlayerPhase(Player player)
     { //플레이어 턴
         Console.Clear();
 
@@ -236,6 +235,9 @@ public class Dungeon
             {
                 SkMenu skMenu = new SkMenu();
                 skMenu.UseSkillMenu(player, target); //선택한 몬스터만 공격(스킬사용)
+                battleInfo.myTurn = false; //턴 교체
+                battleInfo.eTurn = true;
+
             }
             else
             {
@@ -246,14 +248,9 @@ public class Dungeon
         {
             Console.WriteLine("잘못된 입력입니다.");
         }
-        //때릴 수 있는 몬스터 선택
-        //후 현재 보유중인 스킬목록 출력
-        //이후 스킬 선택
-        //공격
-        //전투 종료 메서드 출력
     }
 
-    void EnemyPhase()
+    void EnemyPhase(Player player)
     {
         if (!battleInfo.myTurn && battleInfo.eTurn) //몬스터 차례일 때
         {
@@ -283,11 +280,10 @@ public class Dungeon
         Console.WriteLine("당신은 전투에서 도망쳤습니다!");
         Console.WriteLine("의지가 꺾이는 기분이 듭니다...\n");
         Console.WriteLine("당신의 자존감 -10\n");
-        Console.ReadKey(true);
-        //Enter(player); 이거 player 어떤값을 받는 건가요? 마을로 이동하려는데
+        Console.ReadKey(true); //키 입력 시 넘어감. 던전 입구로 돌아감
     }
 
-    void BattleEnd()
+    void BattleEnd(Player player)
     { //전투 종료
         //마을로 돌아가기, 전투 계속하기 선택 가능
         //전투 계속하기 누르면 Battle() 메서드 호출
