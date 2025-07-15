@@ -19,7 +19,7 @@ class Program
             });
 
             Console.Clear();
-            if (selected == 0) player.DisplayStats();
+            if (selected == 0) player.DisplayStats(true);
             else if (selected == 1) SaveLoadMenu(ref player);
             else if (selected == 2)
             {
@@ -140,5 +140,7 @@ class Program
         }
 
         return player;
+       
     }
+    
 }

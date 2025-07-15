@@ -37,7 +37,7 @@ public class Player
     public int INT { get; set; }
     public int DEF { get; set; }
     public int Level { get; set; } = 1;
-    public int Exp { get; set; } = 0;
+    public int Exp { get; set; } = 100;
     public int StatPoints { get; set; } = 0;
     public DateTime SaveTime { get; set; } = DateTime.Now;
     public int ExpToLevel => Level * 100;
@@ -47,15 +47,48 @@ public class Player
     public Item EquippedWeapon = null;
     public Item EquippedArmor = null;
 
-    public void DisplayStats()
+    public string FormatStat(string label, int baseVal, int bonus)
     {
-        Console.WriteLine($"\n[{Name} - {Job}] (Lv. {Level})");
-        Console.WriteLine($"HP: {HP}/{MaxHP}");
-        Console.WriteLine($"STR: {STR} {(TotalSTR > STR ? $"+{TotalSTR - STR}" : "")} | DEX: {DEX} {(TotalDEX > DEX ? $"+{TotalDEX - DEX}" : "")} | INT: {INT} {(TotalINT > INT ? $"+{TotalINT - INT}" : "")} | DEF: {DEF} {(TotalDEF > DEF ? $"+{TotalDEF - DEF}" : "")}");
-        Console.WriteLine($"EXP: {Exp}/{ExpToLevel} | 남은 스탯 포인트: {StatPoints}");
-        Console.WriteLine($"▶ 공격력: {AttackPower} | 회피율: {Evasion} | 방어력: {Defense}");
-        Console.WriteLine($"▶ 경험치 보정률: {ExpBonus * 100:F0}%");
-        Console.WriteLine($"마지막 저장: {SaveTime:yyyy-MM-dd HH:mm:ss}");
+        return bonus > 0 ? $"{label}: {baseVal} (+{bonus})" : $"{label}: {baseVal}";
+    }
+    public void DisplayStats(bool allowStatAllocation = false)
+    {
+        while (true)
+        {
+            Console.Clear();
+
+            Console.WriteLine($"\n[{Name} - {Job}] (Lv. {Level})");
+            Console.WriteLine($"HP: {HP}/{MaxHP}");
+            Console.WriteLine($"{FormatStat("STR", STR, TotalSTR - STR)} | " +
+                              $"{FormatStat("DEX", DEX, TotalDEX - DEX)} | " +
+                              $"{FormatStat("INT", INT, TotalINT - INT)} | " +
+                              $"{FormatStat("DEF", DEF, TotalDEF - DEF)}");
+            Console.WriteLine($"EXP: {Exp}/{ExpToLevel} | 남은 스탯 포인트: {StatPoints}");
+            Console.WriteLine($"▶ 공격력: {AttackPower} | 회피율: {Evasion} | 방어력: {Defense}");
+            Console.WriteLine($"▶ 경험치 보정률: {ExpBonus * 100:F0}%");
+            Console.WriteLine($"마지막 저장: {SaveTime:yyyy-MM-dd HH:mm:ss}");
+
+            if (!allowStatAllocation || StatPoints <= 0)
+            {
+                Console.WriteLine("\n아무 키나 누르면 계속...");
+                Console.ReadKey(true);
+                break;
+            }
+
+            { 
+                int sel = MenuSelector.Select("\n올릴 스탯을 선택하세요", new List<string> { "STR", "DEX", "INT", "DEF" }, false);
+
+                switch (sel)
+                {
+                    case 0: STR++; break;
+                    case 1: DEX++; break;
+                    case 2: INT++; break;
+                    case 3: DEF++; break;
+                }
+
+                StatPoints--;
+            }
+        }
     }
 
     public void GainExp(int baseAmount)
@@ -73,36 +106,38 @@ public class Player
             Console.WriteLine($"레벨이 {Level}로 올랐습니다! 스탯 포인트 +5");
         }
     }
-
     public void AllocateStatPoints()
     {
+        List<string> statOptions = new List<string>
+    {
+        "STR (힘)", "DEX (민첩)", "INT (지능)", "DEF (방어)"
+    };
+
         while (StatPoints > 0)
         {
             Console.Clear();
-            Console.WriteLine("스탯 포인트를 분배하세요.");
+            Console.WriteLine($"남은 스탯 포인트: {StatPoints}\n");
             DisplayStats();
-            Console.WriteLine("\n[1] STR (힘)\n[2] DEX (민첩)\n[3] INT (지능)\n[4] DEF (방어)\n[0] 완료");
-            Console.Write("선택: ");
 
-            string input = Console.ReadLine();
-            if (input == "0") break;
+            int selected = MenuSelector.Select("올릴 스탯을 선택하세요", statOptions, false);
 
-            switch (input)
+            switch (selected)
             {
-                case "1": STR++; StatPoints--; break;
-                case "2": DEX++; StatPoints--; break;
-                case "3": INT++; StatPoints--; break;
-                case "4": DEF++; StatPoints--; break;
-                default:
-                    Console.WriteLine("잘못된 입력입니다.");
-                    Console.ReadKey();
-                    break;
+                case 0: STR++; break;
+                case 1: DEX++; break;
+                case 2: INT++; break;
+                case 3: DEF++; break;
             }
+
+            StatPoints--;
         }
 
+        Console.Clear();
         Console.WriteLine("스탯 분배를 완료했습니다.");
-        Console.ReadKey();
+        Console.WriteLine("아무 키나 누르면 계속...");
+        Console.ReadKey(true);
     }
+
 
     public int AttackPower
     {
