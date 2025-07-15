@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Text_RPG;
 
 public class MonsterInfo
 {
@@ -61,6 +61,7 @@ public class Dungeon
             Console.ReadKey();
         }
     }
+
     /* main 함수에서
     Dungeon dungeon = new Dungeon();
     dungeon.Battle();
@@ -68,6 +69,10 @@ public class Dungeon
 
     List<MonsterInfo> monsterList = new List<MonsterInfo>();
     List<MonsterInfo> appearMonsters = new List<MonsterInfo>();
+
+    BattleInfo battleInfo = new BattleInfo();
+    Player player = new Player();
+
 
     public Dungeon()
     { //몬스터 리스트 생성자, 생성자에서 초기화
@@ -100,14 +105,11 @@ public class Dungeon
         {
             Console.Clear();
             MonsterAppear();
+            PlayerInfo();
 
-            Console.WriteLine("\n[내 정보]");
-            /*Console.WriteLine($"\n[{Name} - {Job}] (Lv. {Level})");
-            Console.WriteLine($"HP: {HP}/{MaxHP}");
-            Console.WriteLine($"EXP: {Exp}/{ExpToLevel} | 남은 스탯 포인트: {StatPoints}");
-            Console.WriteLine($"▶ 공격력: {AttackPower} | 회피율: {Evasion} | 방어력: {Defense}"); */
+            Console.WriteLine("몬스터가 나타났다! 무엇을 하시겠습니까?\n");
 
-            int selected = MenuSelector.Select("몬스터가 등장했다! 무엇을 하시겠습니까?", new List<string>
+            int selected = ShowMenu.ShowMenus(new List<string>
             {
                 "공격한다.", "도망간다."
             });
@@ -150,36 +152,61 @@ public class Dungeon
 
             appearMonsters.Add(clone); //출현 몬스터 리스트에 복제한 값 넣기
         }
+        MonsterPrint();
+    }
 
+    void MonsterPrint()
+    { //등장한 몬스터 출력
         Console.WriteLine("Battle!!\n");
         for (int i = 0; i < appearMonsters.Count; i++)
-        { //몬스터 출력
+        {
             MonsterInfo m = appearMonsters[i];  //appearMonsters의 자료형이 MonsterInfo라 m 앞에 붙임
             Console.WriteLine($"Lv.{m.level} {m.name} (HP: {m.hp})");
         }
     }
 
+    void PlayerInfo()
+    {
+        Console.WriteLine("\n[내 정보]");
+        Console.WriteLine($"\n[{player.Name} - {player.Job}] (Lv. {player.Level})");
+        Console.WriteLine($"HP: {player.HP}/{player.MaxHP}");
+        Console.WriteLine($"EXP: {player.Exp}/{player.ExpToLevel} | 남은 스탯 포인트: {player.StatPoints}");
+        Console.WriteLine($"공격력: {player.AttackPower} | 회피율: {player.Evasion} | 방어력: {player.Defense}\n");
 
-    BattleInfo battleInfo = new BattleInfo();
-    Player player = new Player();
-
+    }
 
 
     void PlayerPhase()
     { //플레이어 턴
-        Console.WriteLine("Battle!!\n");
+        MonsterPrint();
+        PlayerInfo();
+
+        List<string> monsterOptions = new List<string>(); //화면 출력용 문자열로 변환
         for (int i = 0; i < appearMonsters.Count; i++)
-        { //몬스터 출력
+        {
             MonsterInfo m = appearMonsters[i];
-            Console.WriteLine($"[{i + 1}] Lv.{m.level} {m.name} (HP: {m.hp})");
+            monsterOptions.Add($"Lv.{m.level} {m.name} (HP: {m.hp})");
         }
+        Console.WriteLine("공격할 대상을 선택하세요!\n");
+        int selected = ShowMenu.ShowMenus(monsterOptions);
 
-        Console.WriteLine("\n[내 정보]");
-        /*Console.WriteLine($"\n[{Name} - {Job}] (Lv. {Level})");
-        Console.WriteLine($"HP: {HP}/{MaxHP}");
-        Console.WriteLine($"EXP: {Exp}/{ExpToLevel} | 남은 스탯 포인트: {StatPoints}");
-        Console.WriteLine($"▶ 공격력: {AttackPower} | 회피율: {Evasion} | 방어력: {Defense}"); */
-
+        if (selected >= 0 && selected < appearMonsters.Count) //선택한 몬스터가 범위 내라면(혹시 모를 예외처리)
+        {
+            MonsterInfo target = appearMonsters[selected]; //몬스터 선택
+            if (!target.dead) //몬스터가 살아있다면
+            {
+                SkMenu skMenu = new SkMenu();
+                skMenu.UseSkillMenu(player, target); //선택한 몬스터만 공격(스킬사용)
+            }
+            else
+            {
+                Console.WriteLine("해당 몬스터는 이미 죽었습니다.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("잘못된 입력입니다.");
+        }
         //때릴 수 있는 몬스터 선택
         //후 현재 보유중인 스킬목록 출력
         //이후 스킬 선택
@@ -217,7 +244,6 @@ public class Dungeon
         Console.WriteLine("당신은 전투에서 도망쳤습니다!");
         Console.WriteLine("의지가 꺾이는 기분이 듭니다...\n");
         Console.WriteLine("당신의 자존감 -10\n");
-        Console.WriteLine("계속하려면 아무 키나 누르세요...");
         Console.ReadKey(true);
         //Enter(player); 이거 player 어떤값을 받는 건가요? 마을로 이동하려는데
     }

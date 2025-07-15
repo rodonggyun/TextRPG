@@ -9,7 +9,7 @@ namespace Text_RPG
 {
     internal class SkMenu
     {
-        public void UseSkillMenu(Player player, Enemy enemy)
+        public void UseSkillMenu(Player player, MonsterInfo enemy)
         {
             if (player.Skills.Count == 0)
             {
@@ -25,7 +25,7 @@ namespace Text_RPG
             if (selection >= 0)
             {
                 var skill = player.Skills[selection];
-                skill.Effect(player, enemy);
+                //skill.Effect(player, enemy);
                 // 쿨다운 처리 추가 가능
             }
         }
