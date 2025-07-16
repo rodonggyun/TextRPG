@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,11 +41,11 @@ public class Player
     public int StatPoints { get; set; } = 0;
     public DateTime SaveTime { get; set; } = DateTime.Now;
     public int ExpToLevel => Level * 20;
-    public int Gold { get; set; } = 500; // 골드긴한데 원으로 바꿀까요 ??
+    public int Gold { get; set; } = 500; 
 
-    public List<Item> Inventory = new List<Item>();
-    public Item EquippedWeapon = null;
-    public Item EquippedArmor = null;
+    public List<Item> Inventory { get; set; } = new List<Item>();  
+    public Item EquippedWeapon { get; set; } = null; 
+    public Item EquippedArmor { get; set; } = null; 
 
     public string FormatStat(string label, int baseVal, int bonus)
     {
