@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class Town
 {
@@ -25,7 +26,7 @@ public class Town
                 Console.WriteLine("마을을 떠납니다...");
                 break;
             }
-
+           
             switch (selected)
             {
                 case 0:
@@ -349,7 +350,7 @@ public class Town
             }
 
             Console.Clear();
-            Console.WriteLine("[인벤토리 - 방향키 ↑↓로 이동, Z: 장착/해제/사용, X: 나가기]\n");
+            
 
             int idx = 0;
             Console.WriteLine("[무기]");
@@ -390,7 +391,8 @@ public class Town
             Console.WriteLine($"\n[현재 장착]");
             Console.WriteLine($"무기: {(player.EquippedWeapon?.Name ?? "없음")}");
             Console.WriteLine($"방어구: {(player.EquippedArmor?.Name ?? "없음")}");
-            Console.WriteLine("\nX 입력 시 인벤토리 닫기");
+            Console.WriteLine();
+            Console.WriteLine("[방향키 ↑↓로 이동, Z: 장착/해제/사용, X: 나가기]\n");
 
             key = Console.ReadKey(true).Key; 
 
@@ -495,9 +497,12 @@ public class Town
 
         Console.WriteLine($"\n[{weapon.Name}]");
         Console.WriteLine($"+{weapon.UpgradeLevel} → +{nextUpgrade} 강화 시도");
+        Console.WriteLine();
         Console.WriteLine($"강화 확률: {upgradeChance}% / 파괴 확률: {destroyChance}%");
         Console.WriteLine($"강화 성공 시 능력치가 {nextUpgrade * nextUpgrade}만큼 증가");
+        Console.WriteLine();
         Console.WriteLine("강화에는 1000골드가 필요합니다.");
+        Console.WriteLine();
         Console.WriteLine("Z: 강화 시도, X: 취소");
 
         var key = Console.ReadKey(true).Key;
