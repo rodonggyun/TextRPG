@@ -75,25 +75,28 @@ public class Dungeon
 
     public Dungeon()
     { //몬스터 리스트 생성자, 생성자에서 초기화
-        monsterList.Add(CreateMonster(1, "슬라임", 10, 1, 4));  //슬라임 레벨 1일때 체력 20부터 등장
-        monsterList.Add(CreateMonster(2, "고블린", 15, 1, 6)); //고블린 1레벨은 체력 15부터 등장
-        monsterList.Add(CreateMonster(3, "오크", 20, 2, 7));
+        monsterList.Add(CreateMonster(1, "슬라임", 5, 1, 1));  //슬라임 레벨 1일때 체력 20부터 등장
+        monsterList.Add(CreateMonster(2, "고블린", 6, 1, 1)); //고블린 1레벨은 체력 15부터 등장
+        monsterList.Add(CreateMonster(3, "오크", 7, 1, 1));
     }
 
     MonsterInfo CreateMonster(int type, string name, int baseHp, int minLevel, int maxLevel)
     { //몬스터 생성
         Random rand = new Random();
         int level = rand.Next(minLevel, maxLevel + 1); //레벨은 최소 레벨 ~ 최대 레벨 랜덤 범위
-        int damageMultiplier = rand.Next(1, 4); // 1, 2, 3
+        int damageMultiplier = rand.Next(1, 4); //데미지 범위 1~3배
         int atk = level * damageMultiplier;
+
+        int findHp = baseHp + level * 10; //몬스터 최종 체력
 
         return new MonsterInfo() //객체 생성+초기화
         {
             type = type,
             name = name,
-            hp = baseHp + level * 10, //1레벨이면 hp+10, 2레벨이면 hp+20, ...
+            hp = findHp,
+            maxHp = findHp, //최대체력도 초기화. 1레벨이면 hp+10, 2레벨이면 hp+20, ...
             level = level,
-            exp = level * 10,
+            exp = level * 20,
             gold = level * 5,
             atk = atk,
             dead = false
@@ -142,6 +145,25 @@ public class Dungeon
         int floor = player.Floor;
         BossInfo boss = bossManager.GetBossByFloor(floor);   // 몇층인지 확인
 
+        int minLevel = 1;
+        int maxLevel = 1;
+        if (floor >= 1 && floor <= 5) //1~5층이라면 몬스터 1~3레벨로 등장
+        {
+            minLevel = 1;
+            maxLevel = 3;
+        }
+        else if (floor > 5 && floor <= 10)
+        {
+            minLevel = 2;
+            maxLevel = 5;
+        }
+        else if (floor > 10)
+        { //10층 이상부터는 몬스터 4~10레벨
+            minLevel = 4;
+            maxLevel = 10;
+        }
+
+
         // 보스 몬스터 생성
         if (boss != null)
         {
@@ -162,17 +184,12 @@ public class Dungeon
                 int index = rand.Next(monsterList.Count); //몬스터 랜덤 등장
                 MonsterInfo original = monsterList[index]; //몬스터는 리스트에서 무작위로 가져옴.(얘는 복사한 객체가 아니라 원본 몬스터임)
 
-                MonsterInfo clone = new MonsterInfo() //원본 몬스터에게 피해 안 가게끔 깊은 복사
-                {
-                    type = original.type,
-                    name = original.name,
-                    hp = original.hp,
-                    level = original.level,
-                    exp = original.exp,
-                    dead = false,
-                    gold = original.gold,
-                    atk = original.atk
-                };
+                MonsterInfo clone = CreateMonster( //몬스터 복제해서 생성
+                    original.type,
+                    original.name,
+                    original.hp,
+                    minLevel,
+                    maxLevel);
 
                 appearMonsters.Add(clone); //출현 몬스터 리스트에 복제한 값 넣기
             }
@@ -190,7 +207,7 @@ public class Dungeon
                 Console.ForegroundColor = ConsoleColor.DarkGray; // 죽은 몬스터는 회색으로
             else
                 Console.ResetColor(); // 살아있는 몬스터는 기본색
-            Console.WriteLine($"Lv.{m.level} {m.name} (HP: {m.hp})");
+            Console.WriteLine($"Lv.{m.level} {m.name} (HP: {m.hp}/{m.maxHp})");
         }
         Console.ResetColor(); // 색상 초기화 (다른 곳에 영향 안 주도록)
     }
@@ -209,18 +226,23 @@ public class Dungeon
         Console.Clear();
 
         List<string> monsterOptions = new List<string>(); //화면 출력용 문자열로 변환
+        List<MonsterInfo> livingMonsters = new List<MonsterInfo>(); //실제로 살아있는 몬스터들
         for (int i = 0; i < appearMonsters.Count; i++)
         {
             MonsterInfo m = appearMonsters[i];
-            monsterOptions.Add($"Lv.{m.level} {m.name} (HP: {m.hp})");
+            if (!m.dead) //살아있는 몬스터라면
+            {
+                monsterOptions.Add($"Lv.{m.level} {m.name} (HP: {m.hp}/{m.maxHp})"); // 화면에 출력
+                livingMonsters.Add(m); //살아있는 몬스터 리스트에 추가
+            }
         }
         Console.WriteLine("공격할 대상을 선택하세요!\n");
         int selected = ShowMenu.ShowMenus(monsterOptions);
 
-        if (selected >= 0 && selected < appearMonsters.Count) //선택한 몬스터가 범위 내라면(혹시 모를 예외처리)
+        if (selected >= 0 && selected < livingMonsters.Count) //선택한 몬스터가 범위 내라면
         {
-            MonsterInfo target = appearMonsters[selected]; //몬스터 선택
-            if (!target.dead) //몬스터가 살아있다면
+            MonsterInfo target = livingMonsters[selected]; //살아있는 몬스터 선택
+            if (!target.dead) //몬스터가 살아있다면(혹시모를 예외처리용)
             {
                 SkMenu skMenu = new SkMenu();
                 skMenu.UseSkillMenu(player, target); //선택한 몬스터만 공격(스킬사용)
