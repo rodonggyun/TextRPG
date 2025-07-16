@@ -497,9 +497,12 @@ public class Town
 
         Console.WriteLine($"\n[{weapon.Name}]");
         Console.WriteLine($"+{weapon.UpgradeLevel} → +{nextUpgrade} 강화 시도");
+        Console.WriteLine();
         Console.WriteLine($"강화 확률: {upgradeChance}% / 파괴 확률: {destroyChance}%");
         Console.WriteLine($"강화 성공 시 능력치가 {nextUpgrade * nextUpgrade}만큼 증가");
+        Console.WriteLine();
         Console.WriteLine("강화에는 1000골드가 필요합니다.");
+        Console.WriteLine();
         Console.WriteLine("Z: 강화 시도, X: 취소");
 
         var key = Console.ReadKey(true).Key;
