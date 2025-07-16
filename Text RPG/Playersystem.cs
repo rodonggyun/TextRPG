@@ -42,6 +42,7 @@ public class Player
     public DateTime SaveTime { get; set; } = DateTime.Now;
     public int ExpToLevel => Level * 100;
     public int Gold { get; set; } = 500; // 골드긴한데 원으로 바꿀까요 ??
+    public int Floor { get; set; } = 1;  // 현재 던전 층수 @@@@@@@@@@@@@@@@@@@@@@@@@@
 
     public List<Item> Inventory = new List<Item>();
     public Item EquippedWeapon = null;

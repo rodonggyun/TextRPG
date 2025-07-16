@@ -24,7 +24,6 @@ public class BattleInfo
 {
     public bool myTurn = true; //플레이어 차례, 기본값 true
     public bool eTurn = false; //몬스터 차례
-    public int floor = 1;
 }
 
 // 전투 및 선택지 관련 클래스
@@ -104,7 +103,7 @@ public class Dungeon
     void Battle(Player player) //전투 화면
     {
         Console.Clear();
-        MonsterAppear();
+        MonsterAppear(player);
 
         while (true)
         {
@@ -136,46 +135,23 @@ public class Dungeon
         }
     }
 
-    void MonsterAppear()
-    { //몬스터 랜덤 등장
+    void MonsterAppear(Player player)
+    {
         appearMonsters.Clear();  // 이전 몬스터들 삭제
 
-        if (battleInfo.floor == 1)
-        {
-            BossInfo boss = bossManager.GetBossByFloor(battleInfo.floor);
+        int floor = player.Floor;
+        BossInfo boss = bossManager.GetBossByFloor(floor);   // 몇층인지 확인
 
-            if (boss != null)
-            {
-                appearMonsters.Add(boss);  // 보스를 출현시킴
-                Console.WriteLine($"10층의 보스 \"{boss.name}\"가 나타났습니다!");
-                Console.WriteLine($"Lv.{boss.level} {boss.name} (HP: {boss.hp})");
-            }
+        // 보스 몬스터 생성
+        if (boss != null)
+        {
+            appearMonsters.Add(boss);  // 층에 맞는 보스 출현
+            Console.WriteLine($"{floor}층의 보스 \"{boss.name}\"가 나타났습니다!");
+            Console.WriteLine($"Lv.{boss.level} {boss.name} (HP: {boss.hp})");
+            return; // 일반 몬스터 생성 스킵
         }
 
-        else if (battleInfo.floor == 20)
-        {
-            BossInfo boss = bossManager.GetBossByFloor(battleInfo.floor);
-
-            if (boss != null)
-            {
-                appearMonsters.Add(boss);  // 보스를 출현시킴
-                Console.WriteLine($"20층의 보스 \"{boss.name}\"가 나타났습니다!");
-                Console.WriteLine($"Lv.{boss.level} {boss.name} (HP: {boss.hp})");
-            }
-        }
-
-        else if (battleInfo.floor == 30)
-        {
-            BossInfo boss = bossManager.GetBossByFloor(battleInfo.floor);
-
-            if (boss != null)
-            {
-                appearMonsters.Add(boss);  // 보스를 출현시킴
-                Console.WriteLine($"30층의 보스 \"{boss.name}\" 가 나타났습니다!");
-                Console.WriteLine($"Lv.{boss.level} {boss.name} (HP: {boss.hp})");
-            }
-        }
-
+        // 일반 몬스터 생성
         else
         {
             Random rand = new Random();
@@ -206,7 +182,7 @@ public class Dungeon
 
     void MonsterPrint()
     { //등장한 몬스터 출력
-        Console.WriteLine($"▶ 몬스터가 나타났다! 무엇을 하시겠습니까?  ({battleInfo.floor}층)\n");
+        Console.WriteLine($"▶ 몬스터가 나타났다! 무엇을 하시겠습니까?  ({player.Floor}층)\n");
         for (int i = 0; i < appearMonsters.Count; i++)
         {
             MonsterInfo m = appearMonsters[i];  //appearMonsters의 자료형이 MonsterInfo라 m 앞에 붙임
@@ -343,7 +319,7 @@ public class Dungeon
         {
             if (appearMonsters.All(m => m.dead))
             {
-                Console.WriteLine($"▶ {battleInfo.floor++}층의 몬스터를 전부 토벌했다!");
+                Console.WriteLine($"▶ {player.Floor++}층의 몬스터를 전부 토벌했다!");
 
                 Console.WriteLine($"\n[{player.Name} - {player.Job}] (Lv. {player.Level} | Gold : {player.Gold})");
                 Console.WriteLine($"HP: {player.HP}/{player.MaxHP} | EXP: {player.Exp}/{player.ExpToLevel}\n");

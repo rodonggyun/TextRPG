@@ -15,7 +15,7 @@ static class SaveSystem
         var options = new JsonSerializerOptions { WriteIndented = true };
         string json = JsonSerializer.Serialize(player, options);
         File.WriteAllText(filename, json);
-        Console.WriteLine($"[슬롯 {slot}] 저장 완료!");
+        Console.WriteLine($"[슬롯 {slot}] 저장 완료! (현재 층: {player.Floor})");
     }
 
     public static Player Load(int slot)
@@ -31,7 +31,7 @@ static class SaveSystem
         {
             string json = File.ReadAllText(filename);
             Player player = JsonSerializer.Deserialize<Player>(json);
-            Console.WriteLine($"[슬롯 {slot}] 불러오기 성공!");
+            Console.WriteLine($"[슬롯 {slot}] 불러오기 성공! (현재 층: {player.Floor})");
             return player;
         }
         catch
