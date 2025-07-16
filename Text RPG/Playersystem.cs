@@ -40,8 +40,8 @@ public class Player
     public int Exp { get; set; } = 0;
     public int StatPoints { get; set; } = 0;
     public DateTime SaveTime { get; set; } = DateTime.Now;
-    public int ExpToLevel => Level * 20;
-    public int Gold { get; set; } = 500; // 골드긴한데 원으로 바꿀까요 ??
+    public int ExpToLevel => Level * 1;
+    public int Gold { get; set; } = 1000; // 골드긴한데 원으로 바꿀까요 ??
     public int Floor { get; set; } = 1;  // 현재 던전 층수 @@@@@@@@@@@@@@@@@@@@@@@@@@
 
     public List<Item> Inventory { get; set; } = new List<Item>();  
@@ -105,6 +105,8 @@ public class Player
             Level++;
             StatPoints += 5;
             Console.WriteLine($"레벨이 {Level}로 올랐습니다! 스탯 포인트 +5");
+
+            CheckForSecondJobChange();
         }
     }
     public void AllocateStatPoints()
@@ -203,20 +205,7 @@ public class Player
         }
     }
 
-    public void CheckForThirdJobChange()
-    {
-        if (Level >= 20 && ThirdJob == null && SubJob != null)
-        {
-            var options = GetThirdJobOptions(SubJob);
-            int selection = MenuSelector.Select($"{SubJob}의 3차 전직을 선택하세요!", options);
-            if (selection >= 0)
-            {
-                ThirdJob = options[selection];
-                Console.WriteLine($"\n▶ 당신은 {ThirdJob}으로 3차 전직했습니다!!\n");
-                ApplyThirdJobBonus(ThirdJob);
-            }
-        }
-    }
+    
 
     private List<string> GetSecondJobOptions(string job)
     {
@@ -230,21 +219,7 @@ public class Player
         };
     }
 
-    private List<string> GetThirdJobOptions(string subJob)
-    {
-        return subJob switch
-        {
-            "버서커" => new List<string> { "블러드나이트" },
-            "가디언" => new List<string> { "아이언월" },
-            "어쌔신" => new List<string> { "나이트크로우" },
-            "섀도우댄서" => new List<string> { "팬텀댄서" },
-            "아크메이지" => new List<string> { "엘더위치" },
-            "소서러" => new List<string> { "디멘터" },
-            "크루세이더" => new List<string> { "팔라딘" },
-            "템플러" => new List<string> { "세인트" },
-            _ => new List<string>()
-        };
-    }
+    
 
     private void ApplySecondJobBonus(string subJob)
     {
@@ -323,74 +298,6 @@ public class Player
         Skills.Add(skill);
         Console.WriteLine($"▶ 새로운 스킬 '{skill.Name}'을(를) 배웠습니다! - {skill.Description}");
     }
-    private void ApplyThirdJobBonus(string thirdJob)
-    {
-        switch (thirdJob)
-        {
-            case "블러드나이트": STR += 15; DEF -= 5;
-                UnlockSkill(new Skill("피의 분노", "3턴간 공격 시 체력 흡수", 6, (self, enemy) =>
-                {
-                    Console.WriteLine("▶ 피의 분노 발동! 이제 공격 시 체력을 흡수합니다!");
-                    // 버프 상태 등록 필요
-                }));
-                UnlockSkill(new Skill("【궁극기】피의 폭풍", "모든 적에게 3배 데미지 + 체력 흡수", 10, (self, enemy) =>
-                {
-                    int damage = self.STR * 3;
-                    enemy.HP -= damage;
-                    self.HP += damage / 2;
-                    Console.WriteLine($"▶ 궁극기 발동! 피의 폭풍으로 {damage} 데미지 + 체력 {damage / 2} 회복!");
-                }));
-                break;
-
-            case "아이언월": DEF += 15; UnlockSkill(new Skill("철갑 태세", "받는 피해 3턴간 반감", 6, (self, enemy) =>
-            {
-                Console.WriteLine("▶ 철갑 태세 발동! 피해를 절반만 받습니다!");
-                // 버프 상태 등록 필요
-            }));
-                UnlockSkill(new Skill("【궁극기】절대 방어", "이번 턴 모든 피해 무효 + 적 반격", 10, (self, enemy) =>
-                {
-                    Console.WriteLine("▶ 궁극기 절대 방어 발동! 이번 턴 무적, 다음 턴 적에게 2배 반격!");
-                    // 무적, 반격 효과 처리 필요
-                }));
-                break;
-
-            case "나이트크로우": DEX += 15;
-                INT += 15;
-               
-                break;
-
-            case "팬텀댄서": INT += 10; DEX += 5;
-                break;
-
-            case "엘더위치": INT += 15;
-                UnlockSkill(new Skill("시간 왜곡", "적 턴 스킵 + 쿨다운 초기화", 7, (self, enemy) =>
-                {
-                    Console.WriteLine("▶ 시간 왜곡! 적의 턴을 날리고 스킬 쿨다운이 초기화됩니다.");
-                    // 턴 제어, 쿨다운 초기화 필요
-                }));
-                UnlockSkill(new Skill("【궁극기】대마법 폭격", "모든 적에게 INT x 4 데미지", 12, (self, enemy) =>
-                {
-                    int damage = self.INT * 4;
-                    enemy.HP -= damage;
-                    Console.WriteLine($"▶ 궁극기 대마법 폭격! {damage}의 마법 데미지!");
-                })); break;
-
-            case "디멘터": INT += 10; DEF += 5; break;
-            case "팔라딘": STR += 7; DEF += 7; break;
-            case "세인트": INT += 10; HP += 20;
-                UnlockSkill(new Skill("부활의 기도", "사망 시 1회 자동 부활", 15, (self, enemy) =>
-                {
-                    Console.WriteLine("▶ 부활의 기도가 발동됩니다! 사망 시 자동 부활이 1회 저장됩니다.");
-                    // 상태 등록
-                }));
-                UnlockSkill(new Skill("【궁극기】신성광휘", "모든 아군 체력 완전 회복 + 상태이상 해제", 12, (self, enemy) =>
-                {
-                    Console.WriteLine("▶ 궁극기 신성광휘 발동! 파티 전원 완전 회복!");
-                    self.HP = self.MaxHP;
-                    // 파티 전체 회복 로직 추가
-                }));
-                break;
-        }
-    }
+  
    
 }
