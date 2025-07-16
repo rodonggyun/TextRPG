@@ -69,7 +69,7 @@ public class Dungeon
     List<MonsterInfo> appearMonsters = new List<MonsterInfo>();
 
     BattleInfo battleInfo = new BattleInfo();
-    Player player = new Player();
+    
     BossManager bossManager = new BossManager();
     Town town = new Town();
 
@@ -115,7 +115,7 @@ public class Dungeon
                 break;
             }
 
-            MonsterPrint();
+            MonsterPrint(player);
             PlayerInfo(player);
 
             int selected = ShowMenu.ShowMenus(new List<string>
@@ -176,11 +176,11 @@ public class Dungeon
 
                 appearMonsters.Add(clone); //출현 몬스터 리스트에 복제한 값 넣기
             }
-            MonsterPrint();
+            MonsterPrint(player);
         }
     }
 
-    void MonsterPrint()
+    void MonsterPrint(Player player)
     { //등장한 몬스터 출력
         Console.WriteLine($"▶ 몬스터가 나타났다! 무엇을 하시겠습니까?  ({player.Floor}층)\n");
         for (int i = 0; i < appearMonsters.Count; i++)
