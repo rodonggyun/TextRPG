@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,10 +37,10 @@ public class Player
     public int INT { get; set; }
     public int DEF { get; set; }
     public int Level { get; set; } = 1;
-    public int Exp { get; set; } = 100;
+    public int Exp { get; set; } = 0;
     public int StatPoints { get; set; } = 0;
     public DateTime SaveTime { get; set; } = DateTime.Now;
-    public int ExpToLevel => Level * 100;
+    public int ExpToLevel => Level * 20;
     public int Gold { get; set; } = 500; // 골드긴한데 원으로 바꿀까요 ??
     public int Floor { get; set; } = 1;  // 현재 던전 층수 @@@@@@@@@@@@@@@@@@@@@@@@@@
 
