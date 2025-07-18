@@ -40,7 +40,7 @@ public class Player
     public int Exp { get; set; } = 0;
     public int StatPoints { get; set; } = 0;
     public DateTime SaveTime { get; set; } = DateTime.Now;
-    public int ExpToLevel => Level * 1;
+    public int ExpToLevel => Level * 50;
     public int Gold { get; set; } = 1000; 
     public int Floor { get; set; } = 1;  // 현재 던전 층수 @@@@@@@@@@@@@@@@@@@@@@@@@@
 
